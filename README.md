@@ -22,7 +22,7 @@ The system works as a simple interface for any game engine or modding tools. You
 - **🎭 Evolving Personalities**: Characters change and grow based on their experiences
 - **🔄 Complex Relationships**: NPCs can love some characters while disliking others, just like real people
 
-### The Science Behind It
+### How Emotions Actually Work
 
 Think about how humans work: we feel first, then rationalize our decisions. NPCs should work the same way.
 

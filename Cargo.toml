@@ -1,0 +1,60 @@
+[package]
+name = "npc_neural_affect_matrix"
+version = "0.1.0"
+edition = "2021"
+authors = ["Mohamed 'Moe' Diallo <mdiallo.av@gmail.com>"]
+description = "A neural affect matrix system for NPCs"
+license = "MIT"
+default-run = "npc_neural_affect_matrix"
+
+[lib]
+name = "npc_neural_affect_matrix"
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "download-models"
+path = "src/bin/download_models.rs"
+
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.9.7"
+clap = { version = "4.0", features = ["derive"] }
+uuid = { version = "1.0", features = ["v4", "serde"] }
+bincode = "2.0.1"
+thiserror = "2.0.16"
+chrono = { version = "0.4", features = ["serde"] }
+reqwest = { version = "0.12.23", features = ["json", "stream"] }
+tokio = { version = "1.0", features = ["full"] }
+futures-util = "0.3"
+indicatif = "0.18.0"
+tokio-util = { version = "0.7", features = ["io"] }
+sha2 = "0.10"
+hex = "0.4.3"
+tokenizers = "0.22.1"
+# ONNX Runtime for Rust
+ort = { version = "2.0.0-rc.10", default-features = false, features = ["load-dynamic"] }
+ndarray = "0.16"
+lazy_static = "1.5.0"
+wasm-bindgen = "0.2.103"
+js-sys = "0.3"
+web-sys = "0.3"
+console_error_panic_hook = "0.1"
+
+
+[build-dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.9.7"
+reqwest = { version = "0.12.23", features = ["json", "stream"] }
+tokio = { version = "1.0", features = ["full"] }
+futures-util = "0.3"
+sha2 = "0.10"
+hex = "0.4.3"
+
+[dev-dependencies]
+tempfile = "3.8"
+mockall = "0.12"
+tokio-test = "0.4"

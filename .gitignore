@@ -1,0 +1,4 @@
+dist/
+target/
+models/
+**/.DS_Store

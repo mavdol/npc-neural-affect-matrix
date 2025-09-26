@@ -39,7 +39,7 @@ This creates a comprehensive emotional landscape where every feeling can be prec
 
 ---
 
-## ⚡ How It Works
+## ⚡ The Process Flow
 
 ```
 [ Input Text ] → [ Neural Affect Model ] → [ Memory Retrieval ] →
@@ -62,8 +62,8 @@ This creates a comprehensive emotional landscape where every feeling can be prec
 Since the majority of video game engines run on Windows, we've streamlined the build process to make integration as simple as possible.
 
 ```bash
-chmod +x build-windows.sh
-./build-windows.sh
+chmod +x build-to-windows.sh
+./build-to-windows.sh
 ```
 
 **Find your binaries**

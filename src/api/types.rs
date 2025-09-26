@@ -41,20 +41,3 @@ impl ApiResult {
         }
     }
 }
-
-#[no_mangle]
-pub extern "C" fn free_api_result(result: *mut ApiResult) {
-    if result.is_null() {
-        return;
-    }
-
-    unsafe {
-        let result = Box::from_raw(result);
-        if !result.data.is_null() {
-            let _ = CString::from_raw(result.data);
-        }
-        if !result.error.is_null() {
-            let _ = CString::from_raw(result.error);
-        }
-    }
-}

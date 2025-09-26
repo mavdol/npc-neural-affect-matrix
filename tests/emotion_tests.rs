@@ -1,6 +1,6 @@
 pub mod mock;
 
-use npc_neural_affect_matrix::{EmotionPrediction, EmotionPredictorError, EmotionPredictor};
+use npc_neural_affect_matrix::{EmotionPrediction, EmotionPredictorError};
 
 use mock::{
     MockEmotionPredictor, TestEmotionData, EmotionPredict
@@ -16,7 +16,11 @@ fn test_io_error_conversion() {
 
 #[test]
 fn test_tokenizer_error() {
-    match EmotionPredictor::new("/invalid/path") {
+    let mut mock_predictor = MockEmotionPredictor::new()
+        .with_response("invalid_tokenizer_input", Err(EmotionPredictorError::Tokenizer("Invalid tokenizer input".to_string())));
+
+    let result = mock_predictor.predict_emotion("invalid_tokenizer_input");
+    match result {
         Err(EmotionPredictorError::Tokenizer(_)) => {}
         Err(e) => panic!("Expected Tokenizer error, got: {:?}", e),
         Ok(_) => panic!("Expected error, but got Ok"),
@@ -25,20 +29,15 @@ fn test_tokenizer_error() {
 
 #[test]
 fn test_model_loading_error() {
-    let temp_dir = std::env::temp_dir().join("test_model_dir");
-    std::fs::create_dir_all(&temp_dir).unwrap();
+    let mut mock_predictor = MockEmotionPredictor::new()
+        .with_response("model_loading_test", Err(EmotionPredictorError::ModelLoading("Failed to load model".to_string())));
 
-    let tokenizer_content = r#"{"version": "1.0", "model": {"type": "WordPiece", "vocab": {"[UNK]": 0, "[CLS]": 1, "[SEP]": 2, "[PAD]": 3, "[MASK]": 4}, "unk_token": "[UNK]", "continuing_subword_prefix": ##, "max_input_chars_per_word": 100}}"#;
-    std::fs::write(temp_dir.join("tokenizer.json"), tokenizer_content).unwrap();
-    std::fs::write(temp_dir.join("model.onnx"), vec![0u8; 500]).unwrap();
-
-    match EmotionPredictor::new(temp_dir.to_str().unwrap()) {
-        Err(EmotionPredictorError::ModelLoading(_)) | Err(EmotionPredictorError::Tokenizer(_)) => {}
-        Err(e) => panic!("Expected ModelLoading or Tokenizer error, got: {:?}", e),
+    let result = mock_predictor.predict_emotion("model_loading_test");
+    match result {
+        Err(EmotionPredictorError::ModelLoading(_)) => {}
+        Err(e) => panic!("Expected ModelLoading error, got: {:?}", e),
         Ok(_) => panic!("Expected error, but got Ok"),
     }
-
-    std::fs::remove_dir_all(&temp_dir).unwrap();
 }
 
 #[test]

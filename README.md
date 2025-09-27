@@ -62,8 +62,8 @@ This creates a comprehensive emotional landscape where every feeling can be prec
 Since the majority of video game engines run on Windows, we've streamlined the build process to make integration as simple as possible.
 
 ```bash
-chmod +x build-to-windows.sh
-./build-to-windows.sh
+chmod +x build.sh
+./build.sh
 ```
 
 **Find your binaries**
@@ -75,7 +75,7 @@ chmod +x build-to-windows.sh
 └── onnxruntime_providers_shared.dll # AI providers
 ```
 
-_**Note**: Docker is required to execute build-windows.sh_
+_**Note**: Docker is required to execute build.sh_
 
 ---
 

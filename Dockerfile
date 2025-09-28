@@ -1,16 +1,16 @@
 FROM rust:latest
 
 RUN apt-get update && apt-get install -y \
-    wget \
-    unzip \
-    clang \
-    lld \
-    llvm \
-    && rm -rf /var/lib/apt/lists/*
+   wget \
+   unzip \
+   clang \
+   lld \
+   llvm \
+   && rm -rf /var/lib/apt/lists/*
 
 RUN ln -sf /usr/bin/clang /usr/bin/clang-cl && \
-    ln -sf /usr/bin/lld /usr/bin/lld-link && \
-    ln -sf /usr/bin/llvm-ar /usr/bin/llvm-lib
+   ln -sf /usr/bin/lld /usr/bin/lld-link && \
+   ln -sf /usr/bin/llvm-ar /usr/bin/llvm-lib
 
 RUN rustup target add x86_64-pc-windows-msvc
 
@@ -30,11 +30,11 @@ ENV CFLAGS_x86_64_pc_windows_msvc="-target x86_64-pc-windows-msvc -I/opt/xwin/cr
 ENV CXXFLAGS_x86_64_pc_windows_msvc="-target x86_64-pc-windows-msvc -I/opt/xwin/crt/include -I/opt/xwin/sdk/include/ucrt -I/opt/xwin/sdk/include/um -I/opt/xwin/sdk/include/shared -EHsc"
 
 RUN wget -O onnxruntime-win.zip \
-    "https://github.com/microsoft/onnxruntime/releases/download/v1.22.1/onnxruntime-win-x64-1.22.1.zip" \
-    && unzip onnxruntime-win.zip \
-    && mkdir -p /app/onnxruntime-windows \
-    && cp -r onnxruntime-win-x64-1.22.1/* /app/onnxruntime-windows/ \
-    && rm -rf onnxruntime-win.zip onnxruntime-win-x64-1.22.1/
+   "https://github.com/microsoft/onnxruntime/releases/download/v1.22.1/onnxruntime-win-x64-1.22.1.zip" \
+   && unzip onnxruntime-win.zip \
+   && mkdir -p /app/onnxruntime-windows \
+   && cp -r onnxruntime-win-x64-1.22.1/* /app/onnxruntime-windows/ \
+   && rm -rf onnxruntime-win.zip onnxruntime-win-x64-1.22.1/
 
 ENV ORT_LIB_LOCATION=/app/onnxruntime-windows/lib
 ENV ORT_SKIP_DOWNLOAD=true

@@ -24,8 +24,6 @@ docker run --name "$CONTAINER_NAME" \
     -v "${SCRIPT_DIR}/src:/app/src" \
     -v "${SCRIPT_DIR}/Cargo.toml:/app/Cargo.toml" \
     -v "${SCRIPT_DIR}/Cargo.lock:/app/Cargo.lock" \
-    -v "${SCRIPT_DIR}/build.rs:/app/build.rs" \
-    -v "${SCRIPT_DIR}/target/x86_64-pc-windows-msvc/:/app/target/x86_64-pc-windows-msvc/" \
     npc-neural-affect-matrix:msvc
 
 BUILD_RESULT=$?

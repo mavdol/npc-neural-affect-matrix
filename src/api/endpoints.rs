@@ -11,13 +11,8 @@ use crate::api::{
 use crate::modules::memory::store::MemoryStore;
 
 #[no_mangle]
-pub extern "C" fn initialize_emotion_model(model_path: *const c_char) -> *mut ApiResult {
-    let path_str = match parse_c_string(model_path, "Model path") {
-        Ok(s) => s,
-        Err(result) => return result,
-    };
-
-    match initialize_shared_model(&path_str) {
+pub extern "C" fn initialize_neural_matrix() -> *mut ApiResult {
+    match initialize_shared_model() {
         Ok(()) => Box::into_raw(Box::new(ApiResult::success("Model initialized successfully".to_string()))),
         Err(result) => result,
     }

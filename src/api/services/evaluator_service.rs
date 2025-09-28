@@ -7,8 +7,8 @@ use crate::api::types::{ApiResult, NpcId};
 pub static NPC_SESSIONS: OnceLock<Mutex<HashMap<NpcId, MemoryEmotionEvaluator>>> = OnceLock::new();
 pub static SHARED_MODEL: OnceLock<Arc<Mutex<EmotionPredictor>>> = OnceLock::new();
 
-pub fn initialize_shared_model(model_path: &str) -> Result<(), *mut ApiResult> {
-    let predictor = EmotionPredictor::new(model_path)
+pub fn initialize_shared_model() -> Result<(), *mut ApiResult> {
+    let predictor = EmotionPredictor::new() // Path parameter unused - models downloaded automatically
         .map_err(|e| Box::into_raw(Box::new(ApiResult::error(format!("Failed to initialize model: {:?}", e)))))?;
 
     SHARED_MODEL.set(Arc::new(Mutex::new(predictor)))

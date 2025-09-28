@@ -30,7 +30,7 @@ impl MemoryEmotionEvaluator {
     }
 
     pub fn predict(&self, text: &str, _past_time: i64) -> Result<EmotionPrediction, EmotionPredictorError> {
-        let mut emotion_predictor = EmotionPredictor::new("models/NPC-Valence-Arousal-Prediction-ONNX")?;
+        let mut emotion_predictor = EmotionPredictor::new()?;
 
         let predicted_emotion = emotion_predictor.predict_emotion(text)
             .map_err(|e| {

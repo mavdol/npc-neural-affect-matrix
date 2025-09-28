@@ -71,29 +71,22 @@ pub struct EmotionPredictor {
 }
 
 impl EmotionPredictor {
-    pub fn new(model_path: &str) -> Result<Self, EmotionPredictorError> {
+    const MODEL_VERSION: &'static str = "v0.0.1";
+
+    pub fn new() -> Result<Self, EmotionPredictorError> {
         ort::init()
             .with_name("emotion_prediction")
             .commit()?;
 
-        let model_path = Path::new(model_path);
+        let cache_dir = Self::get_cache_directory()?;
+        let model_dir = cache_dir.join(format!("NPC-Prediction-Model-{}", Self::MODEL_VERSION));
 
-        let tokenizer_path = model_path.join("tokenizer.json");
+        Self::check_and_download_models()?;
+
+        let tokenizer_path = model_dir.join("tokenizer.json");
         let tokenizer = Self::load_tokenizer_with_fallback(&tokenizer_path)?;
 
-        let onnx_model_path = model_path.join("model.onnx");
-        if !onnx_model_path.exists() {
-            return Err(EmotionPredictorError::ModelLoading(
-                "ONNX model file (model.onnx) not found. Please convert your model to ONNX format.".to_string()
-            ));
-        }
-
-        if Self::is_placeholder_file(&onnx_model_path)? {
-            return Err(EmotionPredictorError::ModelLoading(
-                "ONNX model is a placeholder file. Please run 'cargo run --bin download-models' to download the actual model, or provide your own ONNX model.".to_string()
-            ));
-        }
-
+        let onnx_model_path = model_dir.join("model.onnx");
         let model_data = std::fs::read(&onnx_model_path)?;
         let session = Session::builder()?
             .with_optimization_level(GraphOptimizationLevel::Level3)?
@@ -107,8 +100,115 @@ impl EmotionPredictor {
         })
     }
 
+    pub fn check_and_download_models() -> Result<String, EmotionPredictorError> {
+        let cache_dir = Self::get_cache_directory()?;
+        let model_dir = cache_dir.join(format!("NPC-Prediction-Model-{}", Self::MODEL_VERSION));
+
+        if Self::models_exist_and_valid(&model_dir) {
+            return Ok("Models already up to date".to_string());
+        }
+
+        // Clean up old versions
+        Self::cleanup_old_versions(&cache_dir)?;
+
+        // Download new version
+        Self::download_models_sync(&model_dir)?;
+
+        // Create version file
+        let version_file = model_dir.join("version.txt");
+        std::fs::write(&version_file, Self::MODEL_VERSION)
+            .map_err(|e| EmotionPredictorError::Io(e.to_string()))?;
+
+        Ok(format!("Models downloaded successfully (version {})", Self::MODEL_VERSION))
+    }
+
+    fn get_cache_directory() -> Result<std::path::PathBuf, EmotionPredictorError> {
+        // Try to create cache directory next to the executable/DLL
+        let cache_dir = std::env::current_exe()
+            .unwrap_or_else(|_| std::env::current_dir().unwrap_or_else(|_| ".".into()))
+            .parent()
+            .unwrap_or(Path::new("."))
+            .join("npc_models_cache");
+
+        std::fs::create_dir_all(&cache_dir)
+            .map_err(|e| EmotionPredictorError::Io(e.to_string()))?;
+
+        Ok(cache_dir)
+    }
+
+    fn models_exist_and_valid(model_dir: &Path) -> bool {
+        let version_file = model_dir.join("version.txt");
+
+        // Check if version matches
+        if let Ok(cached_version) = std::fs::read_to_string(&version_file) {
+            if cached_version.trim() != Self::MODEL_VERSION {
+                return false; // Wrong version
+            }
+        } else {
+            return false; // No version file
+        }
+
+        // Check if all required files exist
+        model_dir.join("model.onnx").exists() &&
+        model_dir.join("tokenizer.json").exists() &&
+        !Self::is_placeholder_file(&model_dir.join("model.onnx")).unwrap_or(true)
+    }
+
+    fn cleanup_old_versions(cache_dir: &Path) -> Result<(), EmotionPredictorError> {
+        if let Ok(entries) = std::fs::read_dir(cache_dir) {
+            for entry in entries.flatten() {
+                if let Some(name) = entry.file_name().to_str() {
+                    if name.starts_with("NPC-Models-") && name != format!("NPC-Models-{}", Self::MODEL_VERSION) {
+                        eprintln!("Cleaning up old model version: {}", name);
+                        if let Err(e) = std::fs::remove_dir_all(entry.path()) {
+                            eprintln!("Warning: Failed to remove old models: {}", e);
+                        }
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn download_models_sync(model_dir: &Path) -> Result<(), EmotionPredictorError> {
+        eprintln!("NPC Neural Affect Matrix: Downloading models for first-time use...");
+
+        std::fs::create_dir_all(model_dir)
+            .map_err(|e| EmotionPredictorError::Io(e.to_string()))?;
+
+        let base_url = "https://huggingface.co/Mavdol/NPC-Valence-Arousal-Prediction-ONNX/resolve/main";
+        let files = ["model.onnx", "tokenizer.json", "config.json", "vocab.txt"];
+
+        for file in &files {
+            let url = format!("{}/{}", base_url, file);
+            let file_path = model_dir.join(file);
+
+            if file_path.exists() {
+                continue; // Skip if already downloaded
+            }
+
+            eprintln!("Downloading {}...", file);
+
+            // Simple synchronous download using std library
+            let response = std::process::Command::new("curl")
+                .args(&["-L", "-o", file_path.to_str().unwrap(), &url])
+                .output()
+                .map_err(|e| EmotionPredictorError::ModelLoading(format!("Failed to download {}: {}", file, e)))?;
+
+            if !response.status.success() {
+                return Err(EmotionPredictorError::ModelLoading(
+                    format!("Failed to download {}: {}", file, String::from_utf8_lossy(&response.stderr))
+                ));
+            }
+        }
+
+        eprintln!("NPC Neural Affect Matrix: Models downloaded successfully!");
+        Ok(())
+    }
+
 
     pub fn predict_emotion(&mut self, text: &str) -> Result<EmotionPrediction, EmotionPredictorError> {
+        println!("Predicting emotion for text: {}", text);
         let encoding = self.tokenizer
             .encode(text, true)
             .map_err(|e| EmotionPredictorError::Tokenizer(format!("Tokenization error: {}", e)))?;

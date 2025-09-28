@@ -11,38 +11,38 @@
 
 ## 🎯 What is Neural Affect Matrix?
 
-Traditional NPCs rely on simple conditional logic. They don't think or understand the basis for their actions. This often leads to bugs or incoherent decisions that break immersion and make characters feel artificial. The goal is to make NPCs more human by giving them emotions that persist over time, creating unique personalities through experiences.
+Traditional NPCs rely on conditional logic and don't understand the source of their actions. This often leads to bugs or incoherent decisions that break immersion and make characters feel artificial. The goal is to make NPCs more human by giving them emotions as an important source of their behavior. Emotions that persist over time, creating unique personalities through experiences.
 
-The system works as a simple interface for any game engine or modding tools. You can instantly check how any NPC feels about specific characters or situations, then use that emotional data to create more believable interactions.
+The system works as a simple api for any game engine or modding tools. You can instantly check how any NPC feels about specific characters or entity, then use that emotional data to create more believable interactions.
 
 **Here's what makes NPCs truly intelligent:**
 
 - **🧠 Emotional Understanding**: NPCs grasp the emotional meaning behind conversations and actions
-- **💭 Perfect Memory**: Every interaction shapes how they feel in the future
+- **💭 Emotional Memory**: Every interaction shapes how they feel in the future
 - **🎭 Evolving Personalities**: Characters change and grow based on their experiences
-- **🔄 Complex Relationships**: NPCs can love some characters while disliking others, just like real people
+- **🔄 Complex Relationships**: NPCs can love some characters or entiry while disliking others, just like real people
 
 ### How Emotions Actually Work
 
 Think about how humans work: we feel first, then rationalize our decisions. NPCs should work the same way.
 
-We use **Russell's Circumplex Model**, a proven scientific framework that maps all human emotions onto a simple 2D coordinate system:
+We use **Russell's Circumplex Model**, a proven scientific framework that maps human emotions onto a simple 2D coordinate system:
 
 - **Valence** (X-axis): How pleasant or unpleasant the emotion feels (-1 to +1)
 - **Arousal** (Y-axis): How energetic or calm the emotion is (-1 to +1)
 
-This creates a comprehensive emotional landscape where every feeling can be precisely mapped and tracked over time.
+This creates an emotional landscape where every feeling can be precisely mapped and tracked over time.
 
 ![Russel's Circumplex](./assets/circumplex.png)
 
-🔗 **Visualize emotions**: [Interactive Valence-Arousal Explorer](https://valence-arousal-visualizer.vercel.app/)
+🔗 **Visualize emotions**: <a href="https://valence-arousal-visualizer.vercel.app/" target="_blank">Interactive Valence-Arousal Explorer</a>
 
 ---
 
 ## ⚡ The Process Flow
 
 ```
-[ Input Text ] → [ Neural Affect Model ] → [ Memory Retrieval ] →
+[ Input Text ] → [ Neural Affect ML Model ] → [ Memory Retrieval ] →
 [ Contextual Re-evaluation ] → [ Emotional Response (Valence, Arousal) ]
 ```
 
@@ -98,15 +98,27 @@ src/
 └── bin/              # Standalone process to help development
 ```
 
-**Download model manually with:**
-
-```
-cargo run --bin download-models
-```
-
 ---
 
 ## 🧩 API References
+
+##### `initialize_neural_matrix`
+
+Initializes the shared neural model that powers emotion prediction. This function must be called before using any other API functions to ensure the AI model is properly loaded and ready for use.
+
+```c
+ApiResult* initialize_neural_matrix();
+```
+
+**Response Fields:**
+
+- **Response** (string): Confirmation message indicating successful model initialization
+
+**Important Notes:**
+
+- This function should be called once at application startup
+- Must be called before creating any NPC sessions
+- If initialization fails, all subsequent API calls will fail
 
 ##### `create_npc_session`
 
@@ -364,7 +376,6 @@ We welcome contributions! Here's how to get started:
 ### Scientific Background
 
 - Russell's Circumplex Model of Affect
-- Valence-Arousal emotion representation
 - Memory decay and emotional persistence research
 
 ---

@@ -108,13 +108,10 @@ impl EmotionPredictor {
             return Ok("Models already up to date".to_string());
         }
 
-        // Clean up old versions
         Self::cleanup_old_versions(&cache_dir)?;
 
-        // Download new version
         Self::download_models_sync(&model_dir)?;
 
-        // Create version file
         let version_file = model_dir.join("version.txt");
         std::fs::write(&version_file, Self::MODEL_VERSION)
             .map_err(|e| EmotionPredictorError::Io(e.to_string()))?;
@@ -123,7 +120,6 @@ impl EmotionPredictor {
     }
 
     fn get_cache_directory() -> Result<std::path::PathBuf, EmotionPredictorError> {
-        // Try to create cache directory next to the executable/DLL
         let cache_dir = std::env::current_exe()
             .unwrap_or_else(|_| std::env::current_dir().unwrap_or_else(|_| ".".into()))
             .parent()
@@ -139,16 +135,14 @@ impl EmotionPredictor {
     fn models_exist_and_valid(model_dir: &Path) -> bool {
         let version_file = model_dir.join("version.txt");
 
-        // Check if version matches
         if let Ok(cached_version) = std::fs::read_to_string(&version_file) {
             if cached_version.trim() != Self::MODEL_VERSION {
-                return false; // Wrong version
+                return false;
             }
         } else {
-            return false; // No version file
+            return false;
         }
 
-        // Check if all required files exist
         model_dir.join("model.onnx").exists() &&
         model_dir.join("tokenizer.json").exists() &&
         !Self::is_placeholder_file(&model_dir.join("model.onnx")).unwrap_or(true)
@@ -184,12 +178,11 @@ impl EmotionPredictor {
             let file_path = model_dir.join(file);
 
             if file_path.exists() {
-                continue; // Skip if already downloaded
+                continue;
             }
 
             eprintln!("Downloading {}...", file);
 
-            // Simple synchronous download using std library
             let response = std::process::Command::new("curl")
                 .args(&["-L", "-o", file_path.to_str().unwrap(), &url])
                 .output()

@@ -189,7 +189,6 @@ fn test_check_and_download_models() {
             assert!(message.contains("Models") || message.contains("downloaded") || message.contains("up to date"));
         },
         Err(e) => {
-            // Expected in test environment where actual model download might fail
             assert!(matches!(e, EmotionPredictorError::ModelLoading(_) | EmotionPredictorError::Io(_)));
         }
     }
@@ -197,21 +196,33 @@ fn test_check_and_download_models() {
 
 #[test]
 fn test_load_tokenizer_with_fallback_existing_file() {
-    // Test with a mock model directory
     if let Ok(temp_dir) = create_mock_model_directory() {
         let tokenizer_path = temp_dir.join("tokenizer.json");
 
-        // This should attempt to load the tokenizer and fall back if it fails
         let result = EmotionPredictor::load_tokenizer_with_fallback(&tokenizer_path);
 
-        // Clean up
         let _ = std::fs::remove_dir_all(&temp_dir);
 
-        // The result should be an error since we're using a mock tokenizer
-        assert!(result.is_err());
-        if let Err(e) = result {
-            assert!(matches!(e, EmotionPredictorError::Tokenizer(_)));
-        }
+        assert!(result.is_ok(), "Expected tokenizer to load successfully, but got error: {:?}", result);
+    }
+}
+
+#[test]
+fn test_load_tokenizer_with_fallback_invalid_file() {
+    let temp_dir = std::env::temp_dir().join(format!("test_invalid_tokenizer_{}", std::process::id()));
+    std::fs::create_dir_all(&temp_dir).unwrap();
+
+    let tokenizer_path = temp_dir.join("tokenizer.json");
+
+    std::fs::write(&tokenizer_path, "invalid json content").unwrap();
+
+    let result = EmotionPredictor::load_tokenizer_with_fallback(&tokenizer_path);
+
+    let _ = std::fs::remove_dir_all(&temp_dir);
+
+    assert!(result.is_err());
+    if let Err(e) = result {
+        assert!(matches!(e, EmotionPredictorError::Tokenizer(_)));
     }
 }
 
@@ -220,7 +231,6 @@ fn test_load_tokenizer_with_fallback_nonexistent_file() {
     let nonexistent_path = Path::new("/nonexistent/tokenizer.json");
     let result = EmotionPredictor::load_tokenizer_with_fallback(nonexistent_path);
 
-    // Should fall back and return error
     assert!(result.is_err());
     if let Err(e) = result {
         assert!(matches!(e, EmotionPredictorError::Tokenizer(_)));
@@ -231,7 +241,6 @@ fn test_load_tokenizer_with_fallback_nonexistent_file() {
 fn test_create_fallback_tokenizer() {
     let result = EmotionPredictor::create_fallback_tokenizer();
 
-    // This function should always return an error with specific message
     assert!(result.is_err());
     if let Err(EmotionPredictorError::Tokenizer(msg)) = result {
         assert!(msg.contains("placeholder"));

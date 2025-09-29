@@ -95,7 +95,6 @@ src/
 ├── models/           # Input/output data structures
 ├── config/           # Configuration handling
 └── utils/            # Utilities and setup
-└── bin/              # Standalone process to help development
 ```
 
 ---

@@ -15,12 +15,12 @@ Traditional NPCs rely on conditional logic and don't understand the source of th
 
 The system works as a simple api for any game engine or modding tools. You can instantly check how any NPC feels about specific characters or entity, then use that emotional data to create more believable interactions.
 
-**Here's what makes NPCs truly intelligent:**
+**Here's what makes NPCs unique:**
 
 - **🧠 Emotional Understanding**: NPCs grasp the emotional meaning behind conversations and actions
 - **💭 Emotional Memory**: Every interaction shapes how they feel in the future
 - **🎭 Evolving Personalities**: Characters change and grow based on their experiences
-- **🔄 Complex Relationships**: NPCs can love some characters or entiry while disliking others, just like real people
+- **🔄 Complex Relationships**: NPCs can love some characters or entity while disliking others, just like real people
 
 ### How Emotions Actually Work
 
@@ -100,6 +100,7 @@ src/
 ---
 
 ## 🧩 API References
+The Neural Affect Matrix provides a C API for seamless integration with game engines like Unity, Unreal Engine, and other C/C++ applications.
 
 ##### `initialize_neural_matrix`
 

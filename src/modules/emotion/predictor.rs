@@ -120,8 +120,11 @@ impl EmotionPredictor {
     }
 
     fn get_cache_directory() -> Result<std::path::PathBuf, EmotionPredictorError> {
-        let cache_dir = std::env::current_exe()
-            .unwrap_or_else(|_| std::env::current_dir().unwrap_or_else(|_| ".".into()))
+        let base_path = std::env::current_exe()
+            .or_else(|_| std::env::current_dir())
+            .unwrap_or_else(|_| ".".into());
+
+        let cache_dir = base_path
             .parent()
             .unwrap_or(Path::new("."))
             .join("npc_models_cache");
@@ -145,7 +148,9 @@ impl EmotionPredictor {
 
         model_dir.join("model.onnx").exists() &&
         model_dir.join("tokenizer.json").exists() &&
-        !Self::is_placeholder_file(&model_dir.join("model.onnx")).unwrap_or(true)
+        Self::is_placeholder_file(&model_dir.join("model.onnx"))
+            .map(|is_placeholder| !is_placeholder)
+            .unwrap_or(false)
     }
 
     fn cleanup_old_versions(cache_dir: &Path) -> Result<(), EmotionPredictorError> {
@@ -183,8 +188,13 @@ impl EmotionPredictor {
 
             eprintln!("Downloading {}...", file);
 
+            let file_path_str = file_path.to_str()
+                .ok_or_else(|| EmotionPredictorError::InvalidInput(
+                    format!("Invalid file path for {}: contains non-UTF8 characters", file)
+                ))?;
+
             let response = std::process::Command::new("curl")
-                .args(&["-L", "-o", file_path.to_str().unwrap(), &url])
+                .args(&["-L", "-o", file_path_str, &url])
                 .output()
                 .map_err(|e| EmotionPredictorError::ModelLoading(format!("Failed to download {}: {}", file, e)))?;
 

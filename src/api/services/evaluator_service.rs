@@ -8,7 +8,7 @@ pub static NPC_SESSIONS: OnceLock<Mutex<HashMap<NpcId, MemoryEmotionEvaluator>>>
 pub static SHARED_MODEL: OnceLock<Arc<Mutex<EmotionPredictor>>> = OnceLock::new();
 
 pub fn initialize_shared_model() -> Result<(), *mut ApiResult> {
-    let predictor = EmotionPredictor::new() // Path parameter unused - models downloaded automatically
+    let predictor = EmotionPredictor::new()
         .map_err(|e| Box::into_raw(Box::new(ApiResult::error(format!("Failed to initialize model: {:?}", e)))))?;
 
     SHARED_MODEL.set(Arc::new(Mutex::new(predictor)))
@@ -77,7 +77,7 @@ pub fn create_working_evaluator(evaluator: &MemoryEmotionEvaluator, source_id: O
 
 pub fn predict_with_cached_model(text: &str) -> Result<EmotionPrediction, *mut ApiResult> {
     let model_arc = SHARED_MODEL.get()
-        .ok_or_else(|| Box::into_raw(Box::new(ApiResult::error("Model not initialized. Call initialize_shared_model first.".to_string()))))?;
+        .ok_or_else(|| Box::into_raw(Box::new(ApiResult::error("Model not initialized. Call initialize_neural_matrix first.".to_string()))))?;
 
     let mut model = model_arc.lock()
         .map_err(|_| Box::into_raw(Box::new(ApiResult::error("Failed to acquire model lock".to_string()))))?;
@@ -86,60 +86,21 @@ pub fn predict_with_cached_model(text: &str) -> Result<EmotionPrediction, *mut A
         .map_err(|e| Box::into_raw(Box::new(ApiResult::error(format!("Prediction failed: {:?}", e)))))
 }
 
-pub fn combine_emotions_psychologically(
-    text_emotion: &EmotionPrediction,
-    source_emotion: Option<&EmotionPrediction>,
-    global_emotion: &EmotionPrediction,
-) -> EmotionPrediction {
-    let (final_valence, final_arousal) = if let Some(source_emotion) = source_emotion {
-        let valence = (source_emotion.valence * 0.5) +
-                     (text_emotion.valence * 0.35) +
-                     (global_emotion.valence * 0.15);
-
-        let arousal = (source_emotion.arousal * 0.5) +
-                     (text_emotion.arousal * 0.35) +
-                     (global_emotion.arousal * 0.15);
-
-        (valence, arousal)
-    } else {
-        let valence = (text_emotion.valence * 0.7) + (global_emotion.valence * 0.3);
-        let arousal = (text_emotion.arousal * 0.7) + (global_emotion.arousal * 0.3);
-
-        (valence, arousal)
-    };
-
-    EmotionPrediction::new(
-        final_valence.clamp(-1.0, 1.0),
-        final_arousal.clamp(-1.0, 1.0)
-    )
-}
-
-pub fn store_emotion_in_memory_for_npc(
-    npc_id: &str,
-    text: &str,
-    final_emotion: &EmotionPrediction,
-    past_time: i64,
-    source_id: Option<&str>,
-) -> Result<(), String> {
-    use crate::modules::memory::store::{MemoryRecord, MemoryStore};
-    use uuid::Uuid;
-
-    let record = MemoryRecord {
-        id: Uuid::new_v4().to_string(),
-        source_id: source_id.unwrap_or("unknown").to_string(),
-        text: text.to_string(),
-        valence: final_emotion.valence,
-        arousal: final_emotion.arousal,
-        past_time,
-    };
-
-    MemoryStore::insert(&npc_id.to_string(), record)
-        .map_err(|e| format!("Failed to store memory: {}", e))
-}
-
 pub fn format_emotion_json(emotion: &EmotionPrediction) -> String {
     serde_json::json!({
         "valence": emotion.valence,
         "arousal": emotion.arousal
     }).to_string()
+}
+
+pub fn evaluate_interaction_with_cached_model(
+    evaluator: &MemoryEmotionEvaluator,
+    text: &str,
+    source_id: Option<&str>,
+) -> Result<EmotionPrediction, String> {
+    let predicted_emotion = predict_with_cached_model(text)
+        .map_err(|_| "Failed to predict emotion with cached model".to_string())?;
+
+    evaluator.evaluate_with_predicted_emotion(text, &predicted_emotion, 0, source_id)
+        .map_err(|e| format!("Failed to evaluate interaction: {:?}", e))
 }

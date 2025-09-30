@@ -15,7 +15,6 @@ impl ApiResult {
         let data_ptr = match CString::new(data) {
             Ok(cstring) => cstring.into_raw(),
             Err(_) => {
-                // This should never fail as it's a known ASCII string without null bytes
                 CString::new("Data contains invalid characters")
                     .expect("Hardcoded fallback string should be valid")
                     .into_raw()
@@ -33,7 +32,6 @@ impl ApiResult {
         let error_ptr = match CString::new(error) {
             Ok(cstring) => cstring.into_raw(),
             Err(_) => {
-                // This should never fail as it's a known ASCII string without null bytes
                 CString::new("Error message contains invalid characters")
                     .expect("Hardcoded fallback string should be valid")
                     .into_raw()

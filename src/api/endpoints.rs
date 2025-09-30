@@ -4,7 +4,7 @@ use crate::api::{
     types::ApiResult,
     services::{
         validation_service::*,
-        evaluator_service::{create_npc_session as create_session, remove_npc_session as remove_session, with_npc_evaluator, format_emotion_json, initialize_shared_model, predict_with_cached_model, combine_emotions_psychologically, store_emotion_in_memory_for_npc},
+        evaluator_service::{create_npc_session as create_session, remove_npc_session as remove_session, with_npc_evaluator, format_emotion_json, initialize_shared_model, evaluate_interaction_with_cached_model},
         memory_service::{import_memory, get_all_memory, clear_memory}
     }
 };
@@ -88,28 +88,11 @@ pub extern "C" fn evaluate_interaction(npc_id: *const c_char, text: *const c_cha
     let source_str = parse_optional_c_string(source_id);
 
     with_npc_evaluator(&npc_id_str, |evaluator| {
-        let predicted_emotion = predict_with_cached_model(&text_str)
-            .map_err(|_| "Failed to predict emotion with cached model".to_string())?;
-
-        let global_emotion = evaluator.calculate_current_emotion()
-            .map_err(|e| format!("Failed to calculate current emotion: {:?}", e))?;
-
-        let source_emotion = if let Some(source_id) = source_str.as_deref() {
-            Some(evaluator.calculate_current_emotion_towards_source(source_id)
-                .map_err(|e| format!("Failed to calculate source emotion: {:?}", e))?)
-        } else {
-            None
-        };
-
-        let final_emotion = combine_emotions_psychologically(
-            &predicted_emotion,
-            source_emotion.as_ref(),
-            &global_emotion
-        );
-
-        if let Err(e) = store_emotion_in_memory_for_npc(&npc_id_str, &text_str, &final_emotion, 0, source_str.as_deref()) {
-            eprintln!("Warning: Failed to store emotion in memory: {:?}", e);
-        }
+        let final_emotion = evaluate_interaction_with_cached_model(
+            evaluator,
+            &text_str,
+            source_str.as_deref()
+        )?;
 
         Ok(format_emotion_json(&final_emotion))
     })

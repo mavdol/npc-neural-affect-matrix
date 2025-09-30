@@ -1,6 +1,5 @@
 pub mod config;
 pub mod modules;
-pub mod utils;
 pub mod api;
 
 

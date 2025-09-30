@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 use tokenizers::Tokenizer;
 use thiserror::Error;
+use ndarray::Array2;
 
 #[derive(Error, Debug, Clone)]
 pub enum EmotionPredictorError {
@@ -211,7 +212,7 @@ impl EmotionPredictor {
 
 
     pub fn predict_emotion(&mut self, text: &str) -> Result<EmotionPrediction, EmotionPredictorError> {
-        println!("Predicting emotion for text: {}", text);
+
         let encoding = self.tokenizer
             .encode(text, true)
             .map_err(|e| EmotionPredictorError::Tokenizer(format!("Tokenization error: {}", e)))?;
@@ -246,7 +247,7 @@ impl EmotionPredictor {
         let (shape, data) = output.try_extract_tensor::<f32>()
             .map_err(|e| EmotionPredictorError::Inference(format!("Failed to extract output: {}", e)))?;
 
-        let predictions = ndarray::Array2::from_shape_vec((shape[0] as usize, shape[1] as usize), data.to_vec())
+        let predictions = Array2::from_shape_vec((shape[0] as usize, shape[1] as usize), data.to_vec())
             .map_err(|e| EmotionPredictorError::ArrayShape(format!("Failed to create predictions array: {}", e)))?;
 
         if predictions.shape() != &[1, 2] {

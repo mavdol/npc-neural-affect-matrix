@@ -1,5 +1,5 @@
 use std::f32::consts::E;
-
+use uuid::Uuid;
 use crate::{EmotionPredictor, EmotionPredictorError};
 use crate::{EmotionPrediction, NpcConfig};
 use super::store::{MemoryStore, MemoryRecord};
@@ -29,7 +29,7 @@ impl MemoryEmotionEvaluator {
         })
     }
 
-    pub fn predict(&self, text: &str, _past_time: i64) -> Result<EmotionPrediction, EmotionPredictorError> {
+    pub fn predict(&self, text: &str, past_time: i64) -> Result<EmotionPrediction, EmotionPredictorError> {
         let mut emotion_predictor = EmotionPredictor::new()?;
 
         let predicted_emotion = emotion_predictor.predict_emotion(text)
@@ -38,21 +38,31 @@ impl MemoryEmotionEvaluator {
                 EmotionPredictorError::Inference(e.to_string())
             })?;
 
+        self.evaluate_with_predicted_emotion(text, &predicted_emotion, past_time, None)
+    }
+
+    pub fn evaluate_with_predicted_emotion(
+        &self,
+        text: &str,
+        predicted_emotion: &EmotionPrediction,
+        past_time: i64,
+        source_id: Option<&str>,
+    ) -> Result<EmotionPrediction, EmotionPredictorError> {
         let global_emotion = self.calculate_current_emotion()?;
 
-        let source_emotion = if let Some(source_id) = &self.source_id {
+        let source_emotion = if let Some(source_id) = source_id.or(self.source_id.as_deref()) {
             Some(self.calculate_current_emotion_towards_source(source_id)?)
         } else {
             None
         };
 
         let final_emotion = self.combine_emotions_psychologically(
-            &predicted_emotion,
+            predicted_emotion,
             source_emotion.as_ref(),
             &global_emotion
         );
 
-        self.store_emotion_in_memory(text, &final_emotion, _past_time)?;
+        self.store_emotion_in_memory(text, &final_emotion, past_time, source_id)?;
 
         Ok(final_emotion)
     }
@@ -115,7 +125,7 @@ impl MemoryEmotionEvaluator {
         (final_valence, final_arousal)
     }
 
-    fn combine_emotions_psychologically(
+    pub fn combine_emotions_psychologically(
         &self,
         text_emotion: &EmotionPrediction,
         source_emotion: Option<&EmotionPrediction>,
@@ -149,12 +159,15 @@ impl MemoryEmotionEvaluator {
         text: &str,
         final_emotion: &EmotionPrediction,
         past_time: i64,
+        source_id: Option<&str>,
     ) -> Result<(), EmotionPredictorError> {
-        use uuid::Uuid;
+        let effective_source_id = source_id
+            .or(self.source_id.as_deref())
+            .unwrap_or("unknown");
 
         let record = MemoryRecord {
             id: Uuid::new_v4().to_string(),
-            source_id: self.source_id.clone().unwrap_or_else(|| "unknown".to_string()),
+            source_id: effective_source_id.to_string(),
             text: text.to_string(),
             valence: final_emotion.valence,
             arousal: final_emotion.arousal,

@@ -29,6 +29,7 @@ pub fn validate_config_json(config_str: &str) -> Result<(), *mut ApiResult> {
     if config_str.is_empty() {
         return Err(Box::into_raw(Box::new(ApiResult::error("Config string is empty".to_string()))));
     }
+
     Ok(())
 }
 
@@ -36,5 +37,6 @@ pub fn validate_memory_json(memory_str: &str) -> Result<(), *mut ApiResult> {
     if memory_str.is_empty() {
         return Ok(());
     }
+
     Ok(())
 }

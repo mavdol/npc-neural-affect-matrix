@@ -28,12 +28,15 @@ impl MemoryStore {
     pub fn insert(npc_id: &NpcId, record: MemoryRecord) -> Result<(), String> {
         let mut npc_memories = NPC_MEMORIES.lock().map_err(|_| "Failed to acquire lock")?;
         let npc_memory = npc_memories.entry(npc_id.clone()).or_insert_with(Vec::new);
+
         npc_memory.push(record);
+
         Ok(())
     }
 
     pub fn get_all(npc_id: &NpcId) -> Result<Vec<MemoryRecord>, String> {
         let npc_memories = NPC_MEMORIES.lock().map_err(|_| "Failed to acquire lock")?;
+
         Ok(npc_memories.get(npc_id).cloned().unwrap_or_default())
     }
 
@@ -41,6 +44,7 @@ impl MemoryStore {
         let npc_memories = NPC_MEMORIES.lock().map_err(|_| "Failed to acquire lock")?;
         let empty_vec = Vec::new();
         let npc_memory = npc_memories.get(npc_id).unwrap_or(&empty_vec);
+
         Ok(npc_memory.iter()
             .filter(|record| record.source_id == source_id)
             .cloned()
@@ -62,27 +66,34 @@ impl MemoryStore {
 
         let mut npc_memories = NPC_MEMORIES.lock().map_err(|_| "Failed to acquire lock")?;
         let npc_memory = npc_memories.entry(npc_id.clone()).or_insert_with(Vec::new);
+
         npc_memory.clear();
         npc_memory.extend(records);
+
         Ok(())
     }
 
     pub fn clear(npc_id: &NpcId) -> Result<(), String> {
         let mut npc_memories = NPC_MEMORIES.lock().map_err(|_| "Failed to acquire lock")?;
+
         if let Some(npc_memory) = npc_memories.get_mut(npc_id) {
             npc_memory.clear();
         }
+
         Ok(())
     }
 
     pub fn remove_npc(npc_id: &NpcId) -> Result<(), String> {
         let mut npc_memories = NPC_MEMORIES.lock().map_err(|_| "Failed to acquire lock")?;
+
         npc_memories.remove(npc_id);
+
         Ok(())
     }
 
     pub fn get_memory_count(npc_id: &NpcId) -> Result<usize, String> {
         let npc_memories = NPC_MEMORIES.lock().map_err(|_| "Failed to acquire lock")?;
+
         Ok(npc_memories.get(npc_id).map(|mem| mem.len()).unwrap_or(0))
     }
 

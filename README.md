@@ -98,7 +98,7 @@ src/
 
 ---
 
-## 🧩 API References
+## 🧩 API References (FFI)
 
 The Neural Affect Matrix provides a C API for seamless integration with game engines like Unity, Unreal Engine, and other C/C++ applications.
 

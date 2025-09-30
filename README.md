@@ -22,7 +22,7 @@ The system works as a simple api for any game engine or modding tools. You can i
 - **🎭 Evolving Personalities**: Characters change and grow based on their experiences
 - **🔄 Complex Relationships**: NPCs can love some characters or entity while disliking others, just like real people
 
-### How Emotions Actually Work
+### How Emotions Work
 
 Think about how humans work: we feel first, then rationalize our decisions. NPCs should work the same way.
 
@@ -94,12 +94,12 @@ src/
 │   └── memory/       # Memory management
 ├── models/           # Input/output data structures
 ├── config/           # Configuration handling
-└── utils/            # Utilities and setup
 ```
 
 ---
 
 ## 🧩 API References
+
 The Neural Affect Matrix provides a C API for seamless integration with game engines like Unity, Unreal Engine, and other C/C++ applications.
 
 ##### `initialize_neural_matrix`
@@ -231,7 +231,7 @@ ApiResult* get_current_emotion_by_source_id(
 
 #### `get_npc_memory`
 
-**Description**: Exports all memory data for an NPC in JSON format. This is essential for save/load systems and debugging emotional state.
+Exports all memory data for an NPC in JSON format. This is essential for save/load systems and debugging emotional state.
 
 ```c
 ApiResult* get_npc_memory(const char* npc_id);
@@ -258,7 +258,7 @@ ApiResult* get_npc_memory(const char* npc_id);
 
 #### `clear_npc_memory`
 
-**Description**: Permanently deletes all memory entries for an NPC, effectively resetting their emotional state to the base personality.
+Permanently deletes all memory entries for an NPC, effectively resetting their emotional state to the base personality.
 
 ```c
 ApiResult* clear_npc_memory(const char* npc_id);
@@ -270,7 +270,7 @@ ApiResult* clear_npc_memory(const char* npc_id);
 
 #### `free_api_result`
 
-**Description**: **Critical function** that must be called after every API function to prevent memory leaks. Failure to call this will cause memory accumulation.
+**Critical function** that must be called after every API function to prevent memory leaks. Failure to call this will cause memory accumulation.
 
 ```c
 void free_api_result(ApiResult* result);

@@ -2,7 +2,7 @@ use std::f32::consts::E;
 use uuid::Uuid;
 use crate::{EmotionPredictor, EmotionPredictorError};
 use crate::{EmotionPrediction, NpcConfig};
-use super::store::{MemoryStore, MemoryRecord};
+use crate::{MemoryStore, MemoryRecord};
 
 #[derive(Clone)]
 pub struct MemoryEmotionEvaluator {

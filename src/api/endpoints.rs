@@ -14,7 +14,7 @@ use crate::api::services::{
     },
     memory_service::{import_memory, get_all_memory, clear_memory},
 };
-use crate::modules::memory::store::MemoryStore;
+use crate::{MemoryStore};
 
 #[no_mangle]
 pub extern "C" fn initialize_neural_matrix() -> *mut ApiResult {

@@ -1,5 +1,7 @@
 use std::os::raw::c_char;
-use crate::api::{types::{ApiResult, NpcId}, services::validation_service::parse_c_string};
+
+use crate::api::types::{ApiResult, NpcId};
+use crate::api::services::validation_service::parse_c_string;
 use crate::modules::memory::store::{MemoryRecord, MemoryStore};
 
 pub fn import_memory(npc_id: &NpcId, npc_memory_json: *const c_char) -> Result<(), *mut ApiResult> {

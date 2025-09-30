@@ -5,7 +5,7 @@
 
 <!-- [![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)](https://github.com/your-repo/npc-neural-affect-matrix) -->
 
-**Give each NPC persistent emotions and dynamic personalities that evolve through interactions, creating more immersive and believable game experiences.**
+**Give each NPC persistent emotions and dynamic personalities that evolve through interactions.**
 
 ---
 

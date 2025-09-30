@@ -1,5 +1,4 @@
-use std::sync::{Mutex, Arc};
-use std::sync::OnceLock;
+use std::sync::{Mutex, Arc, OnceLock};
 use std::collections::HashMap;
 use crate::{MemoryEmotionEvaluator, EmotionPrediction, EmotionPredictor};
 use crate::api::types::{ApiResult, NpcId};

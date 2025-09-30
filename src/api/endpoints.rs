@@ -1,12 +1,18 @@
 use std::os::raw::c_char;
+
 use crate::{MemoryEmotionEvaluator, NpcConfig};
-use crate::api::{
-    types::ApiResult,
-    services::{
-        validation_service::*,
-        evaluator_service::{create_npc_session as create_session, remove_npc_session as remove_session, with_npc_evaluator, format_emotion_json, initialize_shared_model, evaluate_interaction_with_cached_model},
-        memory_service::{import_memory, get_all_memory, clear_memory}
-    }
+use crate::api::types::ApiResult;
+use crate::api::services::{
+    validation_service::{parse_c_string, parse_optional_c_string},
+    evaluator_service::{
+        create_npc_session as create_session,
+        remove_npc_session as remove_session,
+        with_npc_evaluator,
+        format_emotion_json,
+        initialize_shared_model,
+        evaluate_interaction_with_cached_model,
+    },
+    memory_service::{import_memory, get_all_memory, clear_memory},
 };
 use crate::modules::memory::store::MemoryStore;
 

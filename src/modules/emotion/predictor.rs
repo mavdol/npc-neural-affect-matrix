@@ -158,7 +158,7 @@ impl EmotionPredictor {
         if let Ok(entries) = std::fs::read_dir(cache_dir) {
             for entry in entries.flatten() {
                 if let Some(name) = entry.file_name().to_str() {
-                    if name.starts_with("NPC-Models-") && name != format!("NPC-Models-{}", Self::MODEL_VERSION) {
+                    if name.starts_with("NPC-Prediction-Model-") && name != format!("NPC-Prediction-Model-{}", Self::MODEL_VERSION) {
                         eprintln!("Cleaning up old model version: {}", name);
                         if let Err(e) = std::fs::remove_dir_all(entry.path()) {
                             eprintln!("Warning: Failed to remove old models: {}", e);

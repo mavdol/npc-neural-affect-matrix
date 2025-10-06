@@ -92,7 +92,6 @@ src/
 ├── modules/
 │   ├── emotion/      # Neural emotion prediction
 │   └── memory/       # Memory management
-├── models/           # Input/output data structures
 ├── config/           # Configuration handling
 ```
 

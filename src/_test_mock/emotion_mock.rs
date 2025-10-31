@@ -1,4 +1,4 @@
-use npc_neural_affect_matrix::{EmotionPrediction, EmotionPredictorError};
+use crate::modules::emotion::{EmotionPrediction, EmotionPredictorError};
 use std::collections::HashMap;
 
 pub struct MockEmotionPredictor {
@@ -43,7 +43,10 @@ impl MockEmotionPredictor {
 
 impl EmotionPredict for MockEmotionPredictor {
     fn predict_emotion(&mut self, text: &str) -> Result<EmotionPrediction, EmotionPredictorError> {
-        self.responses.get(text).cloned().unwrap_or_else(|| self.default_response.clone())
+        self.responses
+            .get(text)
+            .cloned()
+            .unwrap_or_else(|| self.default_response.clone())
     }
 }
 
@@ -87,19 +90,19 @@ impl TestEmotionData {
     }
 
     pub fn expected_happy_prediction() -> EmotionPrediction {
-        EmotionPrediction::new(0.75, 0.6)  // High valence, moderate arousal
+        EmotionPrediction::new(0.75, 0.6) // High valence, moderate arousal
     }
 
     pub fn expected_sad_prediction() -> EmotionPrediction {
-        EmotionPrediction::new(-0.6, -0.3)  // Low valence, low arousal
+        EmotionPrediction::new(-0.6, -0.3) // Low valence, low arousal
     }
 
     pub fn expected_angry_prediction() -> EmotionPrediction {
-        EmotionPrediction::new(-0.7, 0.8)  // Low valence, high arousal
+        EmotionPrediction::new(-0.7, 0.8) // Low valence, high arousal
     }
 
     pub fn expected_neutral_prediction() -> EmotionPrediction {
-        EmotionPrediction::new(0.0, 0.0)  // Neutral valence and arousal
+        EmotionPrediction::new(0.0, 0.0) // Neutral valence and arousal
     }
 }
 
@@ -107,7 +110,8 @@ pub fn create_mock_model_directory() -> Result<std::path::PathBuf, std::io::Erro
     let temp_dir = std::env::temp_dir().join(format!("test_model_{}", std::process::id()));
     std::fs::create_dir_all(&temp_dir)?;
 
-    let tokenizer_content = format!(r#"{{
+    let tokenizer_content = format!(
+        r#"{{
         "version": "1.0",
         "truncation": null,
         "padding": null,
@@ -156,7 +160,9 @@ pub fn create_mock_model_directory() -> Result<std::path::PathBuf, std::io::Erro
                 "neutral": 10
             }}
         }}
-    }}"#, "##", "##");
+    }}"#,
+        "##", "##"
+    );
 
     std::fs::write(temp_dir.join("tokenizer.json"), tokenizer_content)?;
 
@@ -165,7 +171,6 @@ pub fn create_mock_model_directory() -> Result<std::path::PathBuf, std::io::Erro
 
     Ok(temp_dir)
 }
-
 
 pub trait EmotionPredict {
     fn predict_emotion(&mut self, text: &str) -> Result<EmotionPrediction, EmotionPredictorError>;

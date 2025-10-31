@@ -12,6 +12,10 @@ name = "npc_neural_affect_matrix"
 path = "src/lib.rs"
 crate-type = ["cdylib", "rlib"]
 
+[[bin]]
+name = "npc_neural_affect_matrix"
+path = "src/main.rs"
+
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -21,3 +25,6 @@ tokenizers = "0.22.1"
 ort = { version = "2.0.0-rc.10", default-features = false, features = ["download-binaries"] }
 ndarray = "0.16"
 lazy_static = "1.5.0"
+
+[dev-dependencies]
+rustfmt = "0.10.0"

@@ -1,0 +1,5 @@
+[build]
+target-dir = "target"
+
+[target.aarch64-apple-darwin]
+rustflags = ["-C", "link-arg=-mmacosx-version-min=13.0"]

@@ -1,25 +1,23 @@
 use std::os::raw::c_char;
 
-use crate::{MemoryEmotionEvaluator, NpcConfig};
-use crate::api::types::ApiResult;
 use crate::api::services::{
-    validation_service::{parse_c_string, parse_optional_c_string},
     evaluator_service::{
-        create_npc_session as create_session,
-        remove_npc_session as remove_session,
-        with_npc_evaluator,
-        format_emotion_json,
-        initialize_shared_model,
-        evaluate_interaction_with_cached_model,
+        create_npc_session as create_session, evaluate_interaction_with_cached_model, format_emotion_json,
+        initialize_shared_model, remove_npc_session as remove_session, with_npc_evaluator,
     },
-    memory_service::{import_memory, get_all_memory, clear_memory},
+    memory_service::{clear_memory, get_all_memory, import_memory},
+    validation_service::{parse_c_string, parse_optional_c_string},
 };
-use crate::{MemoryStore};
+use crate::api::types::ApiResult;
+use crate::MemoryStore;
+use crate::{MemoryEmotionEvaluator, NpcConfig};
 
 #[no_mangle]
 pub extern "C" fn initialize_neural_matrix() -> *mut ApiResult {
     match initialize_shared_model() {
-        Ok(()) => Box::into_raw(Box::new(ApiResult::success("Model initialized successfully".to_string()))),
+        Ok(()) => Box::into_raw(Box::new(ApiResult::success(
+            "Model initialized successfully".to_string(),
+        ))),
         Err(result) => result,
     }
 }
@@ -46,7 +44,12 @@ pub extern "C" fn create_npc_session(config_json: *const c_char, npc_memory_json
 
     let evaluator = match MemoryEmotionEvaluator::new_with_id(config, None, npc_id.clone()) {
         Ok(e) => e,
-        Err(e) => return Box::into_raw(Box::new(ApiResult::error(format!("Failed to create evaluator: {:?}", e)))),
+        Err(e) => {
+            return Box::into_raw(Box::new(ApiResult::error(format!(
+                "Failed to create evaluator: {:?}",
+                e
+            ))))
+        }
     };
 
     if let Err(result) = create_session(npc_id.clone(), evaluator) {
@@ -55,7 +58,8 @@ pub extern "C" fn create_npc_session(config_json: *const c_char, npc_memory_json
 
     let response_data = serde_json::json!({
         "npc_id": npc_id
-    }).to_string();
+    })
+    .to_string();
 
     Box::into_raw(Box::new(ApiResult::success(response_data)))
 }
@@ -68,19 +72,28 @@ pub extern "C" fn remove_npc_session(npc_id: *const c_char) -> *mut ApiResult {
     };
 
     if let Err(e) = MemoryStore::remove_npc(&npc_id_str) {
-        return Box::into_raw(Box::new(ApiResult::error(format!("Failed to remove NPC memory: {}", e))));
+        return Box::into_raw(Box::new(ApiResult::error(format!(
+            "Failed to remove NPC memory: {}",
+            e
+        ))));
     }
 
     if let Err(result) = remove_session(&npc_id_str) {
         return result;
     }
 
-    Box::into_raw(Box::new(ApiResult::success(format!("NPC session '{}' removed successfully", npc_id_str))))
+    Box::into_raw(Box::new(ApiResult::success(format!(
+        "NPC session '{}' removed successfully",
+        npc_id_str
+    ))))
 }
 
-
 #[no_mangle]
-pub extern "C" fn evaluate_interaction(npc_id: *const c_char, text: *const c_char, source_id: *const c_char) -> *mut ApiResult {
+pub extern "C" fn evaluate_interaction(
+    npc_id: *const c_char,
+    text: *const c_char,
+    source_id: *const c_char,
+) -> *mut ApiResult {
     let npc_id_str = match parse_c_string(npc_id, "NPC ID string") {
         Ok(s) => s,
         Err(result) => return result,
@@ -94,16 +107,11 @@ pub extern "C" fn evaluate_interaction(npc_id: *const c_char, text: *const c_cha
     let source_str = parse_optional_c_string(source_id);
 
     with_npc_evaluator(&npc_id_str, |evaluator| {
-        let final_emotion = evaluate_interaction_with_cached_model(
-            evaluator,
-            &text_str,
-            source_str.as_deref()
-        )?;
+        let final_emotion = evaluate_interaction_with_cached_model(evaluator, &text_str, source_str.as_deref())?;
 
         Ok(format_emotion_json(&final_emotion))
     })
 }
-
 
 #[no_mangle]
 pub extern "C" fn get_current_emotion(npc_id: *const c_char) -> *mut ApiResult {
@@ -113,7 +121,8 @@ pub extern "C" fn get_current_emotion(npc_id: *const c_char) -> *mut ApiResult {
     };
 
     with_npc_evaluator(&npc_id_str, |evaluator| {
-        let emotion = evaluator.calculate_current_emotion()
+        let emotion = evaluator
+            .calculate_current_emotion()
             .map_err(|e| format!("Failed to calculate emotion: {:?}", e))?;
         Ok(format_emotion_json(&emotion))
     })
@@ -132,7 +141,8 @@ pub extern "C" fn get_current_emotion_by_source_id(npc_id: *const c_char, source
     };
 
     with_npc_evaluator(&npc_id_str, |evaluator| {
-        let emotion = evaluator.calculate_current_emotion_towards_source(&source_str)
+        let emotion = evaluator
+            .calculate_current_emotion_towards_source(&source_str)
             .map_err(|e| format!("Failed to calculate emotion towards source: {:?}", e))?;
         Ok(format_emotion_json(&emotion))
     })
@@ -180,5 +190,3 @@ pub extern "C" fn free_api_result(result: *mut ApiResult) {
         }
     }
 }
-
-

@@ -1,5 +1,6 @@
-use npc_neural_affect_matrix::{EmotionPrediction, EmotionPredictorError, NpcConfig};
-use npc_neural_affect_matrix::modules::memory::store::{MemoryStore, MemoryRecord};
+use crate::config::NpcConfig;
+use crate::modules::emotion::{EmotionPrediction, EmotionPredictorError};
+use crate::modules::memory::store::{MemoryRecord, MemoryStore};
 use std::collections::HashMap;
 
 pub struct MockMemoryEmotionEvaluator {
@@ -26,7 +27,11 @@ impl MockMemoryEmotionEvaluator {
         })
     }
 
-    pub fn new_with_id(config: NpcConfig, source_id: Option<String>, npc_id: String) -> Result<Self, EmotionPredictorError> {
+    pub fn new_with_id(
+        config: NpcConfig,
+        source_id: Option<String>,
+        npc_id: String,
+    ) -> Result<Self, EmotionPredictorError> {
         Ok(Self {
             config,
             source_id,
@@ -38,7 +43,11 @@ impl MockMemoryEmotionEvaluator {
         })
     }
 
-    pub fn with_predict_response(mut self, text: &str, response: Result<EmotionPrediction, EmotionPredictorError>) -> Self {
+    pub fn with_predict_response(
+        mut self,
+        text: &str,
+        response: Result<EmotionPrediction, EmotionPredictorError>,
+    ) -> Self {
         self.predict_responses.insert(text.to_string(), response);
         self
     }
@@ -53,7 +62,11 @@ impl MockMemoryEmotionEvaluator {
         self
     }
 
-    pub fn with_source_emotion_response(mut self, source_id: &str, response: Result<EmotionPrediction, EmotionPredictorError>) -> Self {
+    pub fn with_source_emotion_response(
+        mut self,
+        source_id: &str,
+        response: Result<EmotionPrediction, EmotionPredictorError>,
+    ) -> Self {
         self.source_emotion_responses.insert(source_id.to_string(), response);
         self
     }
@@ -86,12 +99,18 @@ impl MockMemoryEmotionEvaluator {
         let config = NpcConfig::default();
         Self::new(config, Some("test-source".to_string()))
             .unwrap()
-            .with_default_predict_response(Err(EmotionPredictorError::Inference("Mock prediction error".to_string())))
-            .with_current_emotion_response(Err(EmotionPredictorError::Inference("Mock current emotion error".to_string())))
+            .with_default_predict_response(Err(EmotionPredictorError::Inference(
+                "Mock prediction error".to_string(),
+            )))
+            .with_current_emotion_response(Err(EmotionPredictorError::Inference(
+                "Mock current emotion error".to_string(),
+            )))
     }
 
     pub fn predict(&self, text: &str, past_time: i64) -> Result<EmotionPrediction, EmotionPredictorError> {
-        let prediction = self.predict_responses.get(text)
+        let prediction = self
+            .predict_responses
+            .get(text)
             .cloned()
             .unwrap_or_else(|| self.default_predict_response.clone())?;
 
@@ -114,8 +133,12 @@ impl MockMemoryEmotionEvaluator {
         self.current_emotion_response.clone()
     }
 
-    pub fn calculate_current_emotion_towards_source(&self, source_id: &str) -> Result<EmotionPrediction, EmotionPredictorError> {
-        self.source_emotion_responses.get(source_id)
+    pub fn calculate_current_emotion_towards_source(
+        &self,
+        source_id: &str,
+    ) -> Result<EmotionPrediction, EmotionPredictorError> {
+        self.source_emotion_responses
+            .get(source_id)
             .cloned()
             .unwrap_or_else(|| self.current_emotion_response.clone())
     }
@@ -220,11 +243,11 @@ impl TestMemoryData {
     }
 
     pub fn expected_combined_emotion() -> EmotionPrediction {
-        EmotionPrediction::new(0.2, 0.1)  // Slightly positive, low arousal
+        EmotionPrediction::new(0.2, 0.1) // Slightly positive, low arousal
     }
 
     pub fn expected_source_emotion() -> EmotionPrediction {
-        EmotionPrediction::new(0.5, 0.3)  // Moderately positive
+        EmotionPrediction::new(0.5, 0.3) // Moderately positive
     }
 }
 
@@ -236,9 +259,7 @@ impl MemoryTestHelpers {
     }
 
     pub fn test_npc_ids(count: usize) -> Vec<String> {
-        (0..count)
-            .map(|i| format!("test-npc-{}", i))
-            .collect()
+        (0..count).map(|i| format!("test-npc-{}", i)).collect()
     }
 
     pub fn clear_test_npc_memory(npc_id: &str) -> Result<(), String> {
@@ -256,10 +277,16 @@ impl MemoryTestHelpers {
             return Err("Memory record ID cannot be empty".to_string());
         }
         if record.valence < -1.0 || record.valence > 1.0 {
-            return Err(format!("Invalid valence: {} (must be between -1.0 and 1.0)", record.valence));
+            return Err(format!(
+                "Invalid valence: {} (must be between -1.0 and 1.0)",
+                record.valence
+            ));
         }
         if record.arousal < -1.0 || record.arousal > 1.0 {
-            return Err(format!("Invalid arousal: {} (must be between -1.0 and 1.0)", record.arousal));
+            return Err(format!(
+                "Invalid arousal: {} (must be between -1.0 and 1.0)",
+                record.arousal
+            ));
         }
         Ok(())
     }

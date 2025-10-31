@@ -1,11 +1,3 @@
 pub mod predictor;
 
-pub use predictor::{
-    EmotionPredictor,
-    EmotionPrediction,
-    EmotionPredictorError
-};
-
-
-
-
+pub use predictor::{EmotionPrediction, EmotionPredictor, EmotionPredictorError};

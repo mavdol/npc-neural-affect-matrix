@@ -1,7 +1,8 @@
+pub mod _test_mock;
+pub mod api;
 pub mod config;
 pub mod modules;
-pub mod api;
 
-pub use config::{NpcConfig, Identity, PersonalityTraits, MemoryConfig};
-pub use modules::memory::{MemoryStore, MemoryRecord, MemoryEmotionEvaluator};
-pub use modules::emotion::{EmotionPredictor, EmotionPrediction, EmotionPredictorError};
+pub use config::{Identity, MemoryConfig, NpcConfig, PersonalityTraits};
+pub use modules::emotion::{EmotionPrediction, EmotionPredictor, EmotionPredictorError};
+pub use modules::memory::{MemoryEmotionEvaluator, MemoryRecord, MemoryStore};

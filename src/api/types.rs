@@ -14,11 +14,9 @@ impl ApiResult {
     pub fn success(data: String) -> Self {
         let data_ptr = match CString::new(data) {
             Ok(cstring) => cstring.into_raw(),
-            Err(_) => {
-                CString::new("Data contains invalid characters")
-                    .expect("Hardcoded fallback string should be valid")
-                    .into_raw()
-            }
+            Err(_) => CString::new("Data contains invalid characters")
+                .expect("Hardcoded fallback string should be valid")
+                .into_raw(),
         };
 
         Self {
@@ -31,11 +29,9 @@ impl ApiResult {
     pub fn error(error: String) -> Self {
         let error_ptr = match CString::new(error) {
             Ok(cstring) => cstring.into_raw(),
-            Err(_) => {
-                CString::new("Error message contains invalid characters")
-                    .expect("Hardcoded fallback string should be valid")
-                    .into_raw()
-            }
+            Err(_) => CString::new("Error message contains invalid characters")
+                .expect("Hardcoded fallback string should be valid")
+                .into_raw(),
         };
 
         Self {

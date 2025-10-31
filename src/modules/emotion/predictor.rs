@@ -1,16 +1,13 @@
+use ndarray::Array2;
 use ort::{
-    session::{
-        Session,
-        builder::GraphOptimizationLevel,
-    },
-    value::Value,
     inputs,
+    session::{builder::GraphOptimizationLevel, Session},
+    value::Value,
 };
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use tokenizers::Tokenizer;
 use thiserror::Error;
-use ndarray::Array2;
+use tokenizers::Tokenizer;
 
 #[derive(Error, Debug, Clone)]
 pub enum EmotionPredictorError {
@@ -34,7 +31,6 @@ pub enum EmotionPredictorError {
 
     #[error("Array shape error: {0}")]
     ArrayShape(String),
-
 }
 
 impl From<std::io::Error> for EmotionPredictorError {
@@ -75,9 +71,7 @@ impl EmotionPredictor {
     const MODEL_VERSION: &'static str = "v0.0.1";
 
     pub fn new() -> Result<Self, EmotionPredictorError> {
-        ort::init()
-            .with_name("emotion_prediction")
-            .commit()?;
+        ort::init().with_name("emotion_prediction").commit()?;
 
         let cache_dir = Self::get_cache_directory()?;
         let model_dir = cache_dir.join(format!("NPC-Prediction-Model-{}", Self::MODEL_VERSION));
@@ -110,14 +104,15 @@ impl EmotionPredictor {
         }
 
         Self::cleanup_old_versions(&cache_dir)?;
-
         Self::download_models_sync(&model_dir)?;
 
         let version_file = model_dir.join("version.txt");
-        std::fs::write(&version_file, Self::MODEL_VERSION)
-            .map_err(|e| EmotionPredictorError::Io(e.to_string()))?;
+        std::fs::write(&version_file, Self::MODEL_VERSION).map_err(|e| EmotionPredictorError::Io(e.to_string()))?;
 
-        Ok(format!("Models downloaded successfully (version {})", Self::MODEL_VERSION))
+        Ok(format!(
+            "Models downloaded successfully (version {})",
+            Self::MODEL_VERSION
+        ))
     }
 
     fn get_cache_directory() -> Result<std::path::PathBuf, EmotionPredictorError> {
@@ -125,13 +120,9 @@ impl EmotionPredictor {
             .or_else(|_| std::env::current_dir())
             .unwrap_or_else(|_| ".".into());
 
-        let cache_dir = base_path
-            .parent()
-            .unwrap_or(Path::new("."))
-            .join("npc_models_cache");
+        let cache_dir = base_path.parent().unwrap_or(Path::new(".")).join("npc_models_cache");
 
-        std::fs::create_dir_all(&cache_dir)
-            .map_err(|e| EmotionPredictorError::Io(e.to_string()))?;
+        std::fs::create_dir_all(&cache_dir).map_err(|e| EmotionPredictorError::Io(e.to_string()))?;
 
         Ok(cache_dir)
     }
@@ -147,18 +138,20 @@ impl EmotionPredictor {
             return false;
         }
 
-        model_dir.join("model.onnx").exists() &&
-        model_dir.join("tokenizer.json").exists() &&
-        Self::is_placeholder_file(&model_dir.join("model.onnx"))
-            .map(|is_placeholder| !is_placeholder)
-            .unwrap_or(false)
+        model_dir.join("model.onnx").exists()
+            && model_dir.join("tokenizer.json").exists()
+            && Self::is_placeholder_file(&model_dir.join("model.onnx"))
+                .map(|is_placeholder| !is_placeholder)
+                .unwrap_or(false)
     }
 
     fn cleanup_old_versions(cache_dir: &Path) -> Result<(), EmotionPredictorError> {
         if let Ok(entries) = std::fs::read_dir(cache_dir) {
             for entry in entries.flatten() {
                 if let Some(name) = entry.file_name().to_str() {
-                    if name.starts_with("NPC-Prediction-Model-") && name != format!("NPC-Prediction-Model-{}", Self::MODEL_VERSION) {
+                    if name.starts_with("NPC-Prediction-Model-")
+                        && name != format!("NPC-Prediction-Model-{}", Self::MODEL_VERSION)
+                    {
                         eprintln!("Cleaning up old model version: {}", name);
                         if let Err(e) = std::fs::remove_dir_all(entry.path()) {
                             eprintln!("Warning: Failed to remove old models: {}", e);
@@ -173,8 +166,7 @@ impl EmotionPredictor {
     fn download_models_sync(model_dir: &Path) -> Result<(), EmotionPredictorError> {
         eprintln!("NPC Neural Affect Matrix: Downloading models for first-time use...");
 
-        std::fs::create_dir_all(model_dir)
-            .map_err(|e| EmotionPredictorError::Io(e.to_string()))?;
+        std::fs::create_dir_all(model_dir).map_err(|e| EmotionPredictorError::Io(e.to_string()))?;
 
         let base_url = "https://huggingface.co/Mavdol/NPC-Valence-Arousal-Prediction-ONNX/resolve/main";
         let files = ["model.onnx", "tokenizer.json", "config.json", "vocab.txt"];
@@ -189,10 +181,12 @@ impl EmotionPredictor {
 
             eprintln!("Downloading {}...", file);
 
-            let file_path_str = file_path.to_str()
-                .ok_or_else(|| EmotionPredictorError::InvalidInput(
-                    format!("Invalid file path for {}: contains non-UTF8 characters", file)
-                ))?;
+            let file_path_str = file_path.to_str().ok_or_else(|| {
+                EmotionPredictorError::InvalidInput(format!(
+                    "Invalid file path for {}: contains non-UTF8 characters",
+                    file
+                ))
+            })?;
 
             let response = std::process::Command::new("curl")
                 .args(&["-L", "-o", file_path_str, &url])
@@ -200,9 +194,11 @@ impl EmotionPredictor {
                 .map_err(|e| EmotionPredictorError::ModelLoading(format!("Failed to download {}: {}", file, e)))?;
 
             if !response.status.success() {
-                return Err(EmotionPredictorError::ModelLoading(
-                    format!("Failed to download {}: {}", file, String::from_utf8_lossy(&response.stderr))
-                ));
+                return Err(EmotionPredictorError::ModelLoading(format!(
+                    "Failed to download {}: {}",
+                    file,
+                    String::from_utf8_lossy(&response.stderr)
+                )));
             }
         }
 
@@ -210,10 +206,9 @@ impl EmotionPredictor {
         Ok(())
     }
 
-
     pub fn predict_emotion(&mut self, text: &str) -> Result<EmotionPrediction, EmotionPredictorError> {
-
-        let encoding = self.tokenizer
+        let encoding = self
+            .tokenizer
             .encode(text, true)
             .map_err(|e| EmotionPredictorError::Tokenizer(format!("Tokenization error: {}", e)))?;
 
@@ -236,24 +231,28 @@ impl EmotionPredictor {
         let input_ids_value = Value::from_array(([1, self.max_length], input_ids))?;
         let attention_mask_value = Value::from_array(([1, self.max_length], attention_mask))?;
 
-        let outputs = self.session.run(inputs![
-            "input_ids" => input_ids_value,
-            "attention_mask" => attention_mask_value
-        ])
+        let outputs = self
+            .session
+            .run(inputs![
+                "input_ids" => input_ids_value,
+                "attention_mask" => attention_mask_value
+            ])
             .map_err(|e| EmotionPredictorError::Inference(format!("Model inference failed: {}", e)))?;
 
         let output = &outputs[0];
 
-        let (shape, data) = output.try_extract_tensor::<f32>()
+        let (shape, data) = output
+            .try_extract_tensor::<f32>()
             .map_err(|e| EmotionPredictorError::Inference(format!("Failed to extract output: {}", e)))?;
 
         let predictions = Array2::from_shape_vec((shape[0] as usize, shape[1] as usize), data.to_vec())
             .map_err(|e| EmotionPredictorError::ArrayShape(format!("Failed to create predictions array: {}", e)))?;
 
         if predictions.shape() != &[1, 2] {
-            return Err(EmotionPredictorError::Inference(
-                format!("Unexpected output shape: {:?}, expected [1, 2]", predictions.shape())
-            ));
+            return Err(EmotionPredictorError::Inference(format!(
+                "Unexpected output shape: {:?}, expected [1, 2]",
+                predictions.shape()
+            )));
         }
 
         let valence = (predictions[[0, 0]] * 100.0).round() / 100.0;
@@ -262,14 +261,16 @@ impl EmotionPredictor {
         Ok(EmotionPrediction::new(valence, arousal))
     }
 
-
-
     pub fn load_tokenizer_with_fallback(tokenizer_path: &Path) -> Result<Tokenizer, EmotionPredictorError> {
         if tokenizer_path.exists() && !Self::is_placeholder_file(tokenizer_path)? {
             match Tokenizer::from_file(tokenizer_path) {
                 Ok(tokenizer) => return Ok(tokenizer),
                 Err(e) => {
-                    eprintln!("Warning: Failed to load tokenizer from {}: {}", tokenizer_path.display(), e);
+                    eprintln!(
+                        "Warning: Failed to load tokenizer from {}: {}",
+                        tokenizer_path.display(),
+                        e
+                    );
                     eprintln!("Falling back to simple tokenizer...");
                 }
             }
@@ -299,4 +300,276 @@ impl EmotionPredictor {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::{EmotionPrediction, EmotionPredictor, EmotionPredictorError};
+    use crate::_test_mock::emotion_mock::{
+        create_mock_model_directory, EmotionPredict, MockEmotionPredictor, TestEmotionData,
+    };
+    use std::path::Path;
 
+    #[test]
+    fn test_io_error_conversion() {
+        let io_error = std::fs::read_to_string("/nonexistent/path/file.txt").unwrap_err();
+        let emotion_error: EmotionPredictorError = io_error.into();
+        assert!(matches!(emotion_error, EmotionPredictorError::Io(_)));
+    }
+
+    #[test]
+    fn test_tokenizer_error() {
+        let mut mock_predictor = MockEmotionPredictor::new().with_response(
+            "invalid_tokenizer_input",
+            Err(EmotionPredictorError::Tokenizer("Invalid tokenizer input".to_string())),
+        );
+
+        let result = mock_predictor.predict_emotion("invalid_tokenizer_input");
+        match result {
+            Err(EmotionPredictorError::Tokenizer(_)) => {}
+            Err(e) => panic!("Expected Tokenizer error, got: {:?}", e),
+            Ok(_) => panic!("Expected error, but got Ok"),
+        }
+    }
+
+    #[test]
+    fn test_model_loading_error() {
+        let mut mock_predictor = MockEmotionPredictor::new().with_response(
+            "model_loading_test",
+            Err(EmotionPredictorError::ModelLoading("Failed to load model".to_string())),
+        );
+
+        let result = mock_predictor.predict_emotion("model_loading_test");
+        match result {
+            Err(EmotionPredictorError::ModelLoading(_)) => {}
+            Err(e) => panic!("Expected ModelLoading error, got: {:?}", e),
+            Ok(_) => panic!("Expected error, but got Ok"),
+        }
+    }
+
+    #[test]
+    fn test_onnx_runtime_error_conversion() {
+        let ort_error = ort::Error::new("ONNX Runtime error");
+        let emotion_error: EmotionPredictorError = ort_error.into();
+        assert!(matches!(emotion_error, EmotionPredictorError::OnnxRuntime(_)));
+    }
+
+    #[test]
+    fn test_error_display_formatting() {
+        let inference_error = EmotionPredictorError::Inference("Inference failed".to_string());
+        assert!(format!("{}", inference_error).contains("Inference failed"));
+
+        let input_error = EmotionPredictorError::InvalidInput("Invalid input".to_string());
+        assert!(format!("{}", input_error).contains("Invalid input"));
+
+        let array_error = EmotionPredictorError::ArrayShape("Shape mismatch".to_string());
+        assert!(format!("{}", array_error).contains("Shape mismatch"));
+    }
+
+    #[test]
+    fn test_emotion_prediction_new() {
+        let prediction = EmotionPrediction::new(0.52, -0.32);
+        assert_eq!(prediction.valence, 0.52);
+        assert_eq!(prediction.arousal, -0.32);
+    }
+
+    #[test]
+    fn test_emotion_prediction_values() {
+        let prediction = EmotionPrediction::new(0.72, -0.20);
+        let (valence, arousal) = prediction.values();
+        assert_eq!(valence, 0.72);
+        assert_eq!(arousal, -0.20);
+    }
+
+    #[test]
+    fn test_emotion_prediction_equality() {
+        let pred1 = EmotionPrediction::new(0.5, -0.3);
+        let pred2 = EmotionPrediction::new(0.5, -0.3);
+        let pred3 = EmotionPrediction::new(0.5, 0.3);
+
+        assert_eq!(pred1.valence, pred2.valence);
+        assert_eq!(pred1.arousal, pred2.arousal);
+        assert_ne!(pred1.arousal, pred3.arousal);
+    }
+
+    #[test]
+    fn test_mock_emotion_predictor_positive_emotions() {
+        let mut predictor = MockEmotionPredictor::positive();
+
+        for text in TestEmotionData::happy_texts() {
+            let result = predictor.predict_emotion(text);
+            assert!(result.is_ok());
+            let prediction = result.unwrap();
+            assert!(prediction.valence > 0.5, "Expected positive valence for: {}", text);
+            assert!(prediction.arousal > 0.0, "Expected positive arousal for: {}", text);
+        }
+    }
+
+    #[test]
+    fn test_mock_emotion_predictor_negative_emotions() {
+        let mut predictor = MockEmotionPredictor::negative();
+
+        for text in TestEmotionData::sad_texts() {
+            let result = predictor.predict_emotion(text);
+            assert!(result.is_ok());
+            let prediction = result.unwrap();
+            assert!(prediction.valence < 0.0, "Expected negative valence for: {}", text);
+        }
+    }
+
+    #[test]
+    fn test_mock_emotion_predictor_custom_responses() {
+        let mut predictor = MockEmotionPredictor::new()
+            .with_response("I'm happy!", Ok(EmotionPrediction::new(0.9, 0.7)))
+            .with_response("I'm sad", Ok(EmotionPrediction::new(-0.8, -0.3)))
+            .with_response(
+                "Error text",
+                Err(EmotionPredictorError::Inference("Test error".to_string())),
+            );
+
+        let happy_result = predictor.predict_emotion("I'm happy!");
+        assert!(happy_result.is_ok());
+        let happy_pred = happy_result.unwrap();
+        assert_eq!(happy_pred.valence, 0.9);
+        assert_eq!(happy_pred.arousal, 0.7);
+
+        let sad_result = predictor.predict_emotion("I'm sad");
+        assert!(sad_result.is_ok());
+        let sad_pred = sad_result.unwrap();
+        assert_eq!(sad_pred.valence, -0.8);
+        assert_eq!(sad_pred.arousal, -0.3);
+
+        let error_result = predictor.predict_emotion("Error text");
+        assert!(error_result.is_err());
+        if let Err(EmotionPredictorError::Inference(msg)) = error_result {
+            assert_eq!(msg, "Test error");
+        } else {
+            panic!("Expected Inference error");
+        }
+
+        let default_result = predictor.predict_emotion("unknown text");
+        assert!(default_result.is_ok());
+        let default_pred = default_result.unwrap();
+        assert_eq!(default_pred.valence, 0.0);
+        assert_eq!(default_pred.arousal, 0.0);
+    }
+
+    #[test]
+    fn test_mock_predictor_performance() {
+        let mut predictor = MockEmotionPredictor::neutral();
+        let start = std::time::Instant::now();
+
+        for i in 0..1000 {
+            let text = format!("Test text number {}", i);
+            let result = predictor.predict_emotion(&text);
+            assert!(result.is_ok());
+        }
+
+        let duration = start.elapsed();
+        assert!(duration.as_millis() < 100, "Mock predictor too slow: {:?}", duration);
+    }
+
+    #[test]
+    fn test_emotion_prediction_edge_cases() {
+        let mut predictor = MockEmotionPredictor::new();
+
+        let result = predictor.predict_emotion("");
+        assert!(result.is_ok());
+
+        let long_text = "a".repeat(10000);
+        let result = predictor.predict_emotion(&long_text);
+        assert!(result.is_ok());
+
+        let special_text = "!@#$%^&*()_+{}|:<>?[];',./~`";
+        let result = predictor.predict_emotion(special_text);
+        assert!(result.is_ok());
+
+        let unicode_text = "Hello 世界 🌍 café naïve résumé";
+        let result = predictor.predict_emotion(unicode_text);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_check_and_download_models() {
+        let result = EmotionPredictor::check_and_download_models();
+
+        match result {
+            Ok(message) => {
+                assert!(message.contains("Models") || message.contains("downloaded") || message.contains("up to date"));
+            }
+            Err(e) => {
+                assert!(matches!(
+                    e,
+                    EmotionPredictorError::ModelLoading(_) | EmotionPredictorError::Io(_)
+                ));
+            }
+        }
+    }
+
+    #[test]
+    fn test_load_tokenizer_with_fallback_existing_file() {
+        if let Ok(temp_dir) = create_mock_model_directory() {
+            let tokenizer_path = temp_dir.join("tokenizer.json");
+
+            let result = EmotionPredictor::load_tokenizer_with_fallback(&tokenizer_path);
+
+            let _ = std::fs::remove_dir_all(&temp_dir);
+
+            assert!(
+                result.is_ok(),
+                "Expected tokenizer to load successfully, but got error: {:?}",
+                result
+            );
+        }
+    }
+
+    #[test]
+    fn test_load_tokenizer_with_fallback_invalid_file() {
+        let temp_dir = std::env::temp_dir().join(format!("test_invalid_tokenizer_{}", std::process::id()));
+        std::fs::create_dir_all(&temp_dir).unwrap();
+
+        let tokenizer_path = temp_dir.join("tokenizer.json");
+
+        std::fs::write(&tokenizer_path, "invalid json content").unwrap();
+
+        let result = EmotionPredictor::load_tokenizer_with_fallback(&tokenizer_path);
+
+        let _ = std::fs::remove_dir_all(&temp_dir);
+
+        assert!(result.is_err());
+        if let Err(e) = result {
+            assert!(matches!(e, EmotionPredictorError::Tokenizer(_)));
+        }
+    }
+
+    #[test]
+    fn test_load_tokenizer_with_fallback_nonexistent_file() {
+        let nonexistent_path = Path::new("/nonexistent/tokenizer.json");
+        let result = EmotionPredictor::load_tokenizer_with_fallback(nonexistent_path);
+
+        assert!(result.is_err());
+        if let Err(e) = result {
+            assert!(matches!(e, EmotionPredictorError::Tokenizer(_)));
+        }
+    }
+
+    #[test]
+    fn test_create_fallback_tokenizer() {
+        let result = EmotionPredictor::create_fallback_tokenizer();
+
+        assert!(result.is_err());
+        if let Err(EmotionPredictorError::Tokenizer(msg)) = result {
+            assert!(msg.contains("placeholder"));
+            assert!(msg.contains("download-models"));
+        } else {
+            panic!("Expected Tokenizer error");
+        }
+    }
+
+    #[test]
+    fn test_is_placeholder_file_nonexistent() {
+        let nonexistent_path = Path::new("/nonexistent/file.txt");
+        let result = EmotionPredictor::is_placeholder_file(nonexistent_path);
+
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), false);
+    }
+}

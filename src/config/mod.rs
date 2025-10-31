@@ -1,3 +1,3 @@
 pub mod npc_config;
 
-pub use npc_config::{NpcConfig, Identity, PersonalityTraits, MemoryConfig};
+pub use npc_config::{Identity, MemoryConfig, NpcConfig, PersonalityTraits};

@@ -206,7 +206,7 @@ impl EmotionPredictor {
         Ok(())
     }
 
-    pub fn predict_emotion(&mut self, text: &str) -> Result<EmotionPrediction, EmotionPredictorError> {
+    pub fn predict_emotion_from_text(&mut self, text: &str) -> Result<EmotionPrediction, EmotionPredictorError> {
         let encoding = self
             .tokenizer
             .encode(text, true)
@@ -303,9 +303,6 @@ impl EmotionPredictor {
 #[cfg(test)]
 mod tests {
     use super::{EmotionPrediction, EmotionPredictor, EmotionPredictorError};
-    use crate::_test_mock::emotion_mock::{
-        create_mock_model_directory, EmotionPredict, MockEmotionPredictor, TestEmotionData,
-    };
     use std::path::Path;
 
     #[test]
@@ -313,36 +310,6 @@ mod tests {
         let io_error = std::fs::read_to_string("/nonexistent/path/file.txt").unwrap_err();
         let emotion_error: EmotionPredictorError = io_error.into();
         assert!(matches!(emotion_error, EmotionPredictorError::Io(_)));
-    }
-
-    #[test]
-    fn test_tokenizer_error() {
-        let mut mock_predictor = MockEmotionPredictor::new().with_response(
-            "invalid_tokenizer_input",
-            Err(EmotionPredictorError::Tokenizer("Invalid tokenizer input".to_string())),
-        );
-
-        let result = mock_predictor.predict_emotion("invalid_tokenizer_input");
-        match result {
-            Err(EmotionPredictorError::Tokenizer(_)) => {}
-            Err(e) => panic!("Expected Tokenizer error, got: {:?}", e),
-            Ok(_) => panic!("Expected error, but got Ok"),
-        }
-    }
-
-    #[test]
-    fn test_model_loading_error() {
-        let mut mock_predictor = MockEmotionPredictor::new().with_response(
-            "model_loading_test",
-            Err(EmotionPredictorError::ModelLoading("Failed to load model".to_string())),
-        );
-
-        let result = mock_predictor.predict_emotion("model_loading_test");
-        match result {
-            Err(EmotionPredictorError::ModelLoading(_)) => {}
-            Err(e) => panic!("Expected ModelLoading error, got: {:?}", e),
-            Ok(_) => panic!("Expected error, but got Ok"),
-        }
     }
 
     #[test]
@@ -391,103 +358,6 @@ mod tests {
     }
 
     #[test]
-    fn test_mock_emotion_predictor_positive_emotions() {
-        let mut predictor = MockEmotionPredictor::positive();
-
-        for text in TestEmotionData::happy_texts() {
-            let result = predictor.predict_emotion(text);
-            assert!(result.is_ok());
-            let prediction = result.unwrap();
-            assert!(prediction.valence > 0.5, "Expected positive valence for: {}", text);
-            assert!(prediction.arousal > 0.0, "Expected positive arousal for: {}", text);
-        }
-    }
-
-    #[test]
-    fn test_mock_emotion_predictor_negative_emotions() {
-        let mut predictor = MockEmotionPredictor::negative();
-
-        for text in TestEmotionData::sad_texts() {
-            let result = predictor.predict_emotion(text);
-            assert!(result.is_ok());
-            let prediction = result.unwrap();
-            assert!(prediction.valence < 0.0, "Expected negative valence for: {}", text);
-        }
-    }
-
-    #[test]
-    fn test_mock_emotion_predictor_custom_responses() {
-        let mut predictor = MockEmotionPredictor::new()
-            .with_response("I'm happy!", Ok(EmotionPrediction::new(0.9, 0.7)))
-            .with_response("I'm sad", Ok(EmotionPrediction::new(-0.8, -0.3)))
-            .with_response(
-                "Error text",
-                Err(EmotionPredictorError::Inference("Test error".to_string())),
-            );
-
-        let happy_result = predictor.predict_emotion("I'm happy!");
-        assert!(happy_result.is_ok());
-        let happy_pred = happy_result.unwrap();
-        assert_eq!(happy_pred.valence, 0.9);
-        assert_eq!(happy_pred.arousal, 0.7);
-
-        let sad_result = predictor.predict_emotion("I'm sad");
-        assert!(sad_result.is_ok());
-        let sad_pred = sad_result.unwrap();
-        assert_eq!(sad_pred.valence, -0.8);
-        assert_eq!(sad_pred.arousal, -0.3);
-
-        let error_result = predictor.predict_emotion("Error text");
-        assert!(error_result.is_err());
-        if let Err(EmotionPredictorError::Inference(msg)) = error_result {
-            assert_eq!(msg, "Test error");
-        } else {
-            panic!("Expected Inference error");
-        }
-
-        let default_result = predictor.predict_emotion("unknown text");
-        assert!(default_result.is_ok());
-        let default_pred = default_result.unwrap();
-        assert_eq!(default_pred.valence, 0.0);
-        assert_eq!(default_pred.arousal, 0.0);
-    }
-
-    #[test]
-    fn test_mock_predictor_performance() {
-        let mut predictor = MockEmotionPredictor::neutral();
-        let start = std::time::Instant::now();
-
-        for i in 0..1000 {
-            let text = format!("Test text number {}", i);
-            let result = predictor.predict_emotion(&text);
-            assert!(result.is_ok());
-        }
-
-        let duration = start.elapsed();
-        assert!(duration.as_millis() < 100, "Mock predictor too slow: {:?}", duration);
-    }
-
-    #[test]
-    fn test_emotion_prediction_edge_cases() {
-        let mut predictor = MockEmotionPredictor::new();
-
-        let result = predictor.predict_emotion("");
-        assert!(result.is_ok());
-
-        let long_text = "a".repeat(10000);
-        let result = predictor.predict_emotion(&long_text);
-        assert!(result.is_ok());
-
-        let special_text = "!@#$%^&*()_+{}|:<>?[];',./~`";
-        let result = predictor.predict_emotion(special_text);
-        assert!(result.is_ok());
-
-        let unicode_text = "Hello 世界 🌍 café naïve résumé";
-        let result = predictor.predict_emotion(unicode_text);
-        assert!(result.is_ok());
-    }
-
-    #[test]
     fn test_check_and_download_models() {
         let result = EmotionPredictor::check_and_download_models();
 
@@ -501,23 +371,6 @@ mod tests {
                     EmotionPredictorError::ModelLoading(_) | EmotionPredictorError::Io(_)
                 ));
             }
-        }
-    }
-
-    #[test]
-    fn test_load_tokenizer_with_fallback_existing_file() {
-        if let Ok(temp_dir) = create_mock_model_directory() {
-            let tokenizer_path = temp_dir.join("tokenizer.json");
-
-            let result = EmotionPredictor::load_tokenizer_with_fallback(&tokenizer_path);
-
-            let _ = std::fs::remove_dir_all(&temp_dir);
-
-            assert!(
-                result.is_ok(),
-                "Expected tokenizer to load successfully, but got error: {:?}",
-                result
-            );
         }
     }
 

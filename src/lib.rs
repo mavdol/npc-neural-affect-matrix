@@ -1,4 +1,3 @@
-pub mod _test_mock;
 pub mod api;
 pub mod config;
 pub mod modules;

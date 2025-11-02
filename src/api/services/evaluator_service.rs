@@ -112,7 +112,7 @@ pub fn predict_with_cached_model(text: &str) -> Result<EmotionPrediction, *mut A
         .map_err(|_| Box::into_raw(Box::new(ApiResult::error("Failed to acquire model lock".to_string()))))?;
 
     model
-        .predict_emotion(text)
+        .predict_emotion_from_text(text)
         .map_err(|e| Box::into_raw(Box::new(ApiResult::error(format!("Prediction failed: {:?}", e)))))
 }
 
@@ -133,6 +133,6 @@ pub fn evaluate_interaction_with_cached_model(
         predict_with_cached_model(text).map_err(|_| "Failed to predict emotion with cached model".to_string())?;
 
     evaluator
-        .evaluate_with_predicted_emotion(text, &predicted_emotion, 0, source_id)
+        .evaluate_npc_emotion(text, &predicted_emotion, 0, source_id)
         .map_err(|e| format!("Failed to evaluate interaction: {:?}", e))
 }

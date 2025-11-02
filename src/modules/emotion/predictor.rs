@@ -95,7 +95,7 @@ impl EmotionPredictor {
         })
     }
 
-    pub fn check_and_download_models() -> Result<String, EmotionPredictorError> {
+    fn check_and_download_models() -> Result<String, EmotionPredictorError> {
         let cache_dir = Self::get_cache_directory()?;
         let model_dir = cache_dir.join(format!("NPC-Prediction-Model-{}", Self::MODEL_VERSION));
 
@@ -261,7 +261,7 @@ impl EmotionPredictor {
         Ok(EmotionPrediction::new(valence, arousal))
     }
 
-    pub fn load_tokenizer_with_fallback(tokenizer_path: &Path) -> Result<Tokenizer, EmotionPredictorError> {
+    fn load_tokenizer_with_fallback(tokenizer_path: &Path) -> Result<Tokenizer, EmotionPredictorError> {
         if tokenizer_path.exists() && !Self::is_placeholder_file(tokenizer_path)? {
             match Tokenizer::from_file(tokenizer_path) {
                 Ok(tokenizer) => return Ok(tokenizer),
@@ -279,13 +279,13 @@ impl EmotionPredictor {
         Self::create_fallback_tokenizer()
     }
 
-    pub fn create_fallback_tokenizer() -> Result<Tokenizer, EmotionPredictorError> {
+    fn create_fallback_tokenizer() -> Result<Tokenizer, EmotionPredictorError> {
         return Err(EmotionPredictorError::Tokenizer(
             "Tokenizer file is a placeholder. Please provide a real tokenizer.json file or download the actual model using 'cargo run --bin download-models'.".to_string()
         ));
     }
 
-    pub fn is_placeholder_file(file_path: &Path) -> Result<bool, EmotionPredictorError> {
+    fn is_placeholder_file(file_path: &Path) -> Result<bool, EmotionPredictorError> {
         if !file_path.exists() {
             return Ok(false);
         }

@@ -120,7 +120,7 @@ impl MemoryEmotionEvaluator {
         (final_valence, final_arousal)
     }
 
-    pub fn combine_emotions_psychologically(
+    fn combine_emotions_psychologically(
         &self,
         text_emotion: &EmotionPrediction,
         source_emotion: Option<&EmotionPrediction>,

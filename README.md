@@ -369,8 +369,7 @@ We welcome contributions! Here's how to get started:
 ### AI Models
 
 - **Model**: [NPC Valence-Arousal Prediction (ONNX)](https://huggingface.co/Mavdol/NPC-Valence-Arousal-Prediction-ONNX)
-- **Training Dataset**: [NPC Valence-Arousal Dataset](https://huggingface.co/datasets/Mavdol/NPC-Valence-Arousal) (1K+ video game dialogues)
-- **Upcoming**: Expanded dataset with 100K+ samples in development
+- **Training Dataset**: [NPC Valence-Arousal Dataset](https://huggingface.co/datasets/Mavdol/NPC-Valence-Arousal) (70K+ video game dialogues)
 
 ### Scientific Background
 

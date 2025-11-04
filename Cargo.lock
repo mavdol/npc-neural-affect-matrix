@@ -723,7 +723,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "npc_neural_affect_matrix"
+name = "npc-neural-affect-matrix"
 version = "0.1.0"
 dependencies = [
  "lazy_static",

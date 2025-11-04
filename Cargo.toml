@@ -1,11 +1,11 @@
 [package]
-name = "npc_neural_affect_matrix"
+name = "npc-neural-affect-matrix"
 version = "0.1.0"
 edition = "2021"
 authors = ["Mohamed 'Moe' Diallo <mdiallo.av@gmail.com>"]
 description = "A neural affect matrix system for NPCs"
 license = "MIT"
-default-run = "npc_neural_affect_matrix"
+default-run = "npc-neural-affect-matrix"
 
 [lib]
 name = "npc_neural_affect_matrix"
@@ -13,7 +13,7 @@ path = "src/lib.rs"
 crate-type = ["cdylib", "rlib"]
 
 [[bin]]
-name = "npc_neural_affect_matrix"
+name = "npc-neural-affect-matrix"
 path = "src/main.rs"
 
 [dependencies]

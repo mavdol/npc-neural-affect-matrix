@@ -247,7 +247,7 @@ ApiResult* get_npc_memory(const char* npc_id);
   {
     "id": "mem_001",
     "source_id": "player_character",
-    "text": "Thank you for saving my family",
+    "content": "Thank you for saving my family",
     "valence": 0.85,
     "arousal": 0.45,
     "past_time": 1440
@@ -336,7 +336,7 @@ Each NPC maintains a local memory of interactions:
 ```json
 {
   "source_id": "player_character",
-  "text": "Thank you for saving my life",
+  "content": "Thank you for saving my life",
   "valence": 0.85,
   "arousal": 0.45,
   "past_time": 1440

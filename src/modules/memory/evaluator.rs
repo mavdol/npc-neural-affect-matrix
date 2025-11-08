@@ -156,7 +156,7 @@ impl MemoryEmotionEvaluator {
         let record = MemoryRecord {
             id: Uuid::new_v4().to_string(),
             source_id: effective_source_id.to_string(),
-            text: text.to_string(),
+            content: text.to_string(),
             valence: final_emotion.valence,
             arousal: final_emotion.arousal,
             past_time,

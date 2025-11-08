@@ -12,7 +12,7 @@ lazy_static! {
 pub struct MemoryRecord {
     pub id: String,
     pub source_id: String,
-    pub text: String,
+    pub content: String,
     pub valence: f32,
     pub arousal: f32,
     pub past_time: i64,
@@ -138,7 +138,7 @@ mod tests {
         let record1 = MemoryRecord {
             id: "test-1".to_string(),
             source_id: "source-1".to_string(),
-            text: "NPC 1 message".to_string(),
+            content: "NPC 1 message".to_string(),
             valence: 0.5,
             arousal: -0.3,
             past_time: 1000,
@@ -147,7 +147,7 @@ mod tests {
         let record2 = MemoryRecord {
             id: "test-2".to_string(),
             source_id: "source-2".to_string(),
-            text: "NPC 2 message".to_string(),
+            content: "NPC 2 message".to_string(),
             valence: -0.2,
             arousal: 0.7,
             past_time: 2000,
@@ -164,8 +164,8 @@ mod tests {
 
         assert_eq!(npc1_records.len(), 1);
         assert_eq!(npc2_records.len(), 1);
-        assert_eq!(npc1_records[0].text, "NPC 1 message");
-        assert_eq!(npc2_records[0].text, "NPC 2 message");
+        assert_eq!(npc1_records[0].content, "NPC 1 message");
+        assert_eq!(npc2_records[0].content, "NPC 2 message");
     }
 
 

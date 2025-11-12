@@ -7,7 +7,7 @@ description = "A neural affect matrix system for NPCs"
 license = "MIT"
 repository = "https://github.com/mavdol/npc-neural-affect-matrix"
 readme = "README.md"
-keywords = ["npc", "emotion", "ml", "affect", "neural-network", "valence-arousal", "personality"]
+keywords = ["npc", "emotion", "ml", "affect", "neural"]
 categories = ["game-development", "algorithms"]
 default-run = "npc-neural-affect-matrix"
 

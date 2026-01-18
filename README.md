@@ -1,4 +1,4 @@
-# 🧠 Neural Affect Matrix For NPCs
+# Neural Affect Matrix For NPCs
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=flat&logo=rust&logoColor=white)](https://www.rust-lang.org/)
@@ -9,7 +9,7 @@
 
 ---
 
-## 🎯 What is Neural Affect Matrix?
+## What is Neural Affect Matrix?
 
 Traditional NPCs rely on conditional logic and don't understand the source of their actions. This often leads to bugs or incoherent decisions that break immersion and make characters feel artificial. The goal is to make NPCs more human by giving them emotions as an important source of their behavior. Emotions that persist over time, creating unique personalities through experiences.
 
@@ -39,7 +39,7 @@ This creates an emotional landscape where every feeling can be precisely mapped 
 
 ---
 
-## ⚡ The Process Flow
+## The Process Flow
 
 ```
 [ Input Text ] → [ Neural Affect ML Model ] → [ Memory Retrieval ] →
@@ -55,7 +55,7 @@ This creates an emotional landscape where every feeling can be precisely mapped 
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 **Build for production**
 
@@ -79,7 +79,7 @@ _**Note**: Docker is required to execute build.sh_
 
 ---
 
-## 🛠️ Development
+## Development
 
 ### Project Structure
 
@@ -97,7 +97,7 @@ src/
 
 ---
 
-## 🧩 API References (FFI)
+## API References (FFI)
 
 The Neural Affect Matrix provides a C API for seamless integration with game engines like Unity, Unreal Engine, and other C/C++ applications.
 
@@ -352,7 +352,7 @@ Each NPC maintains a local memory of interactions:
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Here's how to get started:
 
@@ -364,7 +364,7 @@ We welcome contributions! Here's how to get started:
 
 ---
 
-## 📚 Resources & Research
+## Resources & Research
 
 ### AI Models
 
@@ -378,13 +378,13 @@ We welcome contributions! Here's how to get started:
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🆘 Support
+## Support
 
 - **Issues**: [GitHub Issues](https://github.com/mavdol/npc-neural-affect-matrix/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/mavdol/npc-neural-affect-matrix/discussions)
